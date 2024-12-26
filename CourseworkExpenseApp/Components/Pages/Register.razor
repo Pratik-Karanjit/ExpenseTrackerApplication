@@ -1,4 +1,8 @@
 ﻿@page "/register"
+@using CourseworkExpenseApp.Models
+@using CourseworkExpenseApp.Services
+@inject IUserService userService
+@inject NavigationManager navigationManager
 
 @* Register Form *@
 <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -9,19 +13,20 @@
             <!-- Username Field -->
             <div class="mb-8">
                 <label for="username" class="form-label fw-bold">Username</label>
-                <input type="text" id="username" class="form-control" placeholder="Enter your username">
+                <input type="text" id="username" class="form-control" placeholder="Enter your username" @bind="newUser.UserName" />
             </div>
 
             <!-- Password Field -->
             <div class="mb-8">
                 <label for="password" class="form-label fw-bold">Password</label>
-                <input type="password" id="password" class="form-control" placeholder="Enter your password">
+                <input type="password" id="password" class="form-control" placeholder="Enter your password" @bind="newUser.Password" />
             </div>
 
             <!-- Currency Type Dropdown -->
+
             <div class="mb-8">
                 <label for="currency" class="form-label fw-bold">Currency Type</label>
-                <select id="currency" class="form-select">
+                <select id="currency" class="form-select" @bind="newUser.CurrencyType">
                     <option selected disabled>Select Currency Type</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
@@ -29,9 +34,10 @@
                     <option value="INR">INR</option>
                 </select>
             </div>
+
             <!-- Submit Button -->
             <div class="d-flex justify-content-center align-items-center">
-                <button type="submit" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
+                <button type="submit" @onclick="AddNewUser" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
                     Submit
                 </button>
             </div>
@@ -39,12 +45,39 @@
     </div>
 </div>
 
+@if (errorMessage != null)
+{
+    <p class="error-message">@errorMessage</p>
+}
 
 @code {
-    private int currentCount = 0;
+    private User newUser = new User(); 
+    private string errorMessage;
 
-    private void IncrementCount()
+    // New field for searching user
+    private int searchUserId;
+
+    // Field to hold retrieved user information
+    private User retrievedUser;
+
+    private async Task AddNewUser()
     {
-        currentCount++;
+        try
+        {
+
+            var existingUsers = await userService.LoadUsersAsync();
+           
+
+            await userService.SaveUserAsync(newUser);
+        
+            newUser = new User();
+            errorMessage = null; 
+            navigationManager.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred while adding the user: {ex.Message}";
+            Console.WriteLine(errorMessage); 
+        }
     }
 }

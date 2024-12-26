@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
-
-
-
+using CourseworkExpenseApp.Services;
 
 namespace CourseworkExpenseApp
 {
@@ -20,8 +18,10 @@ namespace CourseworkExpenseApp
 
             builder.Services.AddMauiBlazorWebView();
 
+            builder.Services.AddSingleton<IUserService, UserService>();
+
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
             builder.Services.AddMudServices();
 

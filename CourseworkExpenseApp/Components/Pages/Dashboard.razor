@@ -1,28 +1,73 @@
 ﻿@page "/dashboard"
 
-<MudText Typo="Typo.h4" GutterBottom="true">Dashboard</MudText>
+<h1 class="fs-2 pl-7 pt-5">DASHBOARD</h1>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
         <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+            <MudPaper Elevation="2"
+                      Class="pa-4 d-flex align-items-center"
+                      Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
+                <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
+                    <h1 class="mb-1 text-white">Rs.1500</h1>
+                    <p class="fs-5 text-white">Total Cash Inflows</p>
+                </div>
+                <MudImage Src="/Images/currency_icon.png"
+                          Alt="currency"
+                          Class="ml-auto"
+                          Width="120"
+                          Height="120"
+                          ObjectFit="ObjectFit.Contain" />
+            </MudPaper>
         </MudItem>
+
         <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+            <MudPaper Elevation="2"
+                      Class="pa-4 d-flex align-items-center"
+                      Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
+                <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
+                    <h1 class="mb-1 text-white">Rs.1500</h1>
+                    <p class="fs-5 text-white">Total Cash Outflows</p>
+                </div>
+                <MudImage Src="/Images/currency_icon.png"
+                          Alt="currency"
+                          Class="ml-auto"
+                          Width="120"
+                          Height="120"
+                          ObjectFit="ObjectFit.Contain" />
+            </MudPaper>
         </MudItem>
-        <MudItem xs="12" sm="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="2"
+                      Class="pa-4 d-flex align-items-center"
+                      Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
+                <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
+                    <h1 class="mb-1 text-white">Rs.1500</h1>
+                    <p class="fs-5 text-white">Total Cash Depts</p>
+                </div>
+                <MudImage Src="/Images/currency_icon.png"
+                          Alt="currency"
+                          Class="ml-auto"
+                          Width="120"
+                          Height="120"
+                          ObjectFit="ObjectFit.Contain" />
+            </MudPaper>
         </MudItem>
+
         <MudItem xs="12" sm="6">
             <MudGrid>
                 <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
+                        <h1>hi</h1>
+                    </MudPaper>
                 </MudItem>
                 <MudItem xs="12">
                     <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
                 </MudItem>
             </MudGrid>
         </MudItem>
+
         <MudItem xs="12" sm="6">
             <MudPaper Elevation="2" Class="pa-4" Style="height: 100%"></MudPaper>
         </MudItem>
