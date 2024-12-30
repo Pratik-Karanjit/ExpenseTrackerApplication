@@ -64,20 +64,22 @@
     {
         try
         {
-
             var existingUsers = await userService.LoadUsersAsync();
-           
+
+            // Generate a unique GUID as UserId
+            newUser.UserId = Guid.NewGuid().ToString();
 
             await userService.SaveUserAsync(newUser);
-        
+
             newUser = new User();
-            errorMessage = null; 
+            errorMessage = null;
             navigationManager.NavigateTo("/login");
         }
         catch (Exception ex)
         {
             errorMessage = $"An error occurred while adding the user: {ex.Message}";
-            Console.WriteLine(errorMessage); 
+            Console.WriteLine(errorMessage);
         }
     }
+
 }

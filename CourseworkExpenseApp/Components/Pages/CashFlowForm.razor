@@ -1,0 +1,115 @@
+﻿@page "/cashFlowForm"
+@using CourseworkExpenseApp.Models
+@using CourseworkExpenseApp.Services
+@inject ICashFlowService CashFlowService
+@inject NavigationManager navigationManager
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header text-center">
+            <h4>Cash Flow Forms</h4>
+        </div>
+        <div class="card-body">
+            <form>
+                <!-- Amount and Inflow/Outflow -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="amount" class="form-label">Amount</label>
+                        <input type="number" id="amount" class="form-control" placeholder="Enter your Amount" @bind="newCashFlow.Amount" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Inflow/Outflow</label>
+                        <div class="d-flex gap-2">
+                            <button type="button" @bind="newCashFlow.FlowType" class="btn btn-outline-primary w-50">Inflow</button>
+                            <button type="button" @bind="newCashFlow.FlowType" class="btn btn-outline-danger w-50">Outflow</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Title and Date -->
+                <div class="row mb-3 mt-5">
+                    <div class="col-md-6">
+                        <label for="transactionTitle" class="form-label">Transaction Title</label>
+                        <input type="text" id="transactionTitle" class="form-control" placeholder="Enter your Transaction Title" @bind="newCashFlow.TransactionTitle" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" id="date" class="form-control" @bind="newCashFlow.Date" />
+                    </div>
+                </div>
+
+                <!-- Tag and Custom Tag -->
+                <div class="row mb-3 mt-5">
+                    <div class="col-md-6">
+                        <label for="tag" class="form-label">Tag</label>
+                        <select id="tag" @bind="newCashFlow.Tag" class="form-select">
+                            <option selected>Select a Tag</option>
+                            <option value="1">Tag 1</option>
+                            <option value="2">Tag 2</option>
+                            <option value="3">Tag 3</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="customTag" class="form-label">Custom Tag (Optional)</label>
+                        <input type="text" id="customTag" class="form-control" placeholder="Custom Tag" @bind="newCashFlow.CustomTag" />
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-3 mt-5">
+                    <label for="notes" class="form-label">Notes (Optional)</label>
+                    <textarea id="notes" class="form-control" rows="3" placeholder="Enter note" @bind="newCashFlow.Notes"></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end align-items-end">
+                    <button type="submit" @onclick="AddCashFlow" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    private CashFlow newCashFlow = new CashFlow();
+    private string errorMessage;
+
+    // New field for searching user
+    private int searchUserId;
+
+    private async Task AddCashFlow()
+    {
+        try
+        {
+            // Log the current values of newCashFlow
+            Console.WriteLine("Debugging newCashFlow values:");
+            Console.WriteLine($"Amount: {newCashFlow.Amount}");
+            Console.WriteLine($"FlowType: {newCashFlow.FlowType}");
+            Console.WriteLine($"TransactionTitle: {newCashFlow.TransactionTitle}");
+            Console.WriteLine($"Date: {newCashFlow.Date}");
+            Console.WriteLine($"Tag: {newCashFlow.Tag}");
+            Console.WriteLine($"CustomTag: {newCashFlow.CustomTag}");
+            Console.WriteLine($"Notes: {newCashFlow.Notes}");
+            var existingUsers = await CashFlowService.LoadCashFlowAsync();
+
+            Console.WriteLine("after exissting users");
+            // Generate a unique GUID as UserId
+            newCashFlow.CashFlowId = Guid.NewGuid().ToString();
+
+            await CashFlowService.SaveCashFlowAsync(newCashFlow);
+
+            newCashFlow = new CashFlow();
+            errorMessage = null;
+            navigationManager.NavigateTo("/debtForm");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred while adding the user: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+    }
+
+}

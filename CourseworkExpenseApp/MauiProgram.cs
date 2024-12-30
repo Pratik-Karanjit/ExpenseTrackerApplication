@@ -19,6 +19,9 @@ namespace CourseworkExpenseApp
             builder.Services.AddMauiBlazorWebView();
 
             builder.Services.AddSingleton<IUserService, UserService>();
+            builder.Services.AddSingleton<ICashFlowService, CashFlowService>();
+            builder.Services.AddSingleton<AuthenticationStateService>();
+
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

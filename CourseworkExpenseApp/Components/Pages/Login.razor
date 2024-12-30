@@ -1,4 +1,11 @@
 ﻿@page "/login"
+@using CourseworkExpenseApp.Models
+@using CourseworkExpenseApp.Services
+@inject IUserService userService
+@inject NavigationManager navigationManager
+@inject AuthenticationStateService authStateService
+@using System.Diagnostics;
+
 
 @* Register Form *@
 <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -9,18 +16,18 @@
             <!-- Username Field -->
             <div class="mb-8">
                 <label for="username" class="form-label fw-bold">Username</label>
-                <input type="text" id="username" class="form-control" placeholder="Enter your username">
+                <input type="text" id="username" class="form-control" placeholder="Enter your username" @bind="username" />
             </div>
 
             <!-- Password Field -->
             <div class="mb-8">
                 <label for="password" class="form-label fw-bold">Password</label>
-                <input type="password" id="password" class="form-control" placeholder="Enter your password">
+                <input type="password" id="password" class="form-control" placeholder="Enter your password" @bind="password" />
             </div>
 
             <!-- Submit Button -->
             <div class="d-flex justify-content-center align-items-center">
-                <button type="submit" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
+                <button type="submit" @onclick="LoginUser" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
                     Submit
                 </button>
             </div>
@@ -28,12 +35,46 @@
     </div>
 </div>
 
-
 @code {
-    private int currentCount = 0;
+    private string username;
+    private string password;
+    private string errorMessage;
 
-    private void IncrementCount()
+    private async Task LoginUser()
     {
-        currentCount++;
+        try
+        {
+            var users = await userService.LoadUsersAsync();
+            Debug.WriteLine($"users: {string.Join(", ", users.Select(u => u.UserName))}");
+
+            var user = users.FirstOrDefault(u => u.UserName == username && u.Password == HashPassword(password));
+
+            if (user != null)
+            {
+                // Set the authenticated user in state management
+                authStateService.SetAuthenticatedUser(user);
+
+                // Redirect to the dashboard or todo page
+                navigationManager.NavigateTo("/dashboard");
+            }
+            else
+            {
+                errorMessage = "Invalid username or password.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred during login: {ex.Message}";
+        }
+    }
+
+    private string HashPassword(string password)
+    {
+        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(password);
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
+        }
     }
 }
