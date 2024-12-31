@@ -6,16 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CourseworkExpenseApp.Models
+
 {
-    public class DebtForm
+    public class DebtFlow
     {
-        public string DebtSource { get; set; }
+        public string DebtFormId { get; set; }
+        public string DebtFormSource { get; set; }
         public decimal Amount { get; set; }
         public DateTime? DueDate { get; set; }
         public DateTime? TransactionDate { get; set; }
         public string Tag { get; set; } // Optional, can be null
         public string CustomTag { get; set; } // Optional, can be null
         public string Notes { get; set; } // Optional, can be null
+
     }
 
 }

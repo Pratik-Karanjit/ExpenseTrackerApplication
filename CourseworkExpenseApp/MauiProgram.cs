@@ -20,6 +20,7 @@ namespace CourseworkExpenseApp
 
             builder.Services.AddSingleton<IUserService, UserService>();
             builder.Services.AddSingleton<ICashFlowService, CashFlowService>();
+            builder.Services.AddSingleton<IDebtFlowService, DebtFlowService>();
             builder.Services.AddSingleton<AuthenticationStateService>();
 
 

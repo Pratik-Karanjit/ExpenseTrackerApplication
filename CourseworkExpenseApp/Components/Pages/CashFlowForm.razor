@@ -18,12 +18,14 @@
                         <input type="number" id="amount" class="form-control" placeholder="Enter your Amount" @bind="newCashFlow.Amount" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Inflow/Outflow</label>
-                        <div class="d-flex gap-2">
-                            <button type="button" @bind="newCashFlow.FlowType" class="btn btn-outline-primary w-50">Inflow</button>
-                            <button type="button" @bind="newCashFlow.FlowType" class="btn btn-outline-danger w-50">Outflow</button>
-                        </div>
+                        <label for="flowType" class="form-label">Inflow/Outflow</label>
+                        <select id="flowType" @bind="newCashFlow.FlowType" class="form-select">
+                            <option value="" disabled selected>Select Flow Type</option>
+                            <option value="Inflow">Inflow</option>
+                            <option value="Outflow">Outflow</option>
+                        </select>
                     </div>
+
                 </div>
 
                 <!-- Transaction Title and Date -->
@@ -103,7 +105,7 @@
 
             newCashFlow = new CashFlow();
             errorMessage = null;
-            navigationManager.NavigateTo("/debtForm");
+            // navigationManager.NavigateTo("/debtForm");
         }
         catch (Exception ex)
         {

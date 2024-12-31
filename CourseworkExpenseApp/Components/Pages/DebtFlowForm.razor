@@ -1,0 +1,102 @@
+﻿@page "/debtFlowForm"
+@using CourseworkExpenseApp.Models
+@using CourseworkExpenseApp.Services
+@inject IDebtFlowService DebtFlowService
+@inject NavigationManager navigationManager
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header text-center">
+            <h4>Debt Form</h4>
+        </div>
+        <div class="card-body">
+            <form>
+              
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="debtFlowSource" class="form-label">Debt Flow Source</label>
+                        <input type="text" id="debtFlowSource" class="form-control" placeholder="Enter your Debt Flow Source" @bind="newDebtFlow.DebtFormSource" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="amount" class="form-label">Amount</label>
+                        <input type="number" id="amount" class="form-control" placeholder="Enter your Amount" @bind="newDebtFlow.Amount" />
+                    </div>
+                </div>
+
+                <!-- Due Date and Transaction Date -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="dueDate" class="form-label">Due Date</label>
+                        <input type="date" id="dueDate" class="form-control" @bind="newDebtFlow.DueDate" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="transactionDate" class="form-label">Transaction Date</label>
+                        <input type="date" id="transactionDate" class="form-control" @bind="newDebtFlow.TransactionDate" />
+                    </div>
+                </div>
+
+                <!-- Tag and Custom Tag -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="tag" class="form-label">Tag (Optional)</label>
+                        <select id="tag" @bind="newDebtFlow.Tag" class="form-select">
+                            <option selected>Select a Tag</option>
+                            <option value="1">Tag 1</option>
+                            <option value="2">Tag 2</option>
+                            <option value="3">Tag 3</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="customTag" class="form-label">Custom Tag (Optional)</label>
+                        <input type="text" id="customTag" class="form-control" placeholder="Custom Tag" @bind="newDebtFlow.CustomTag" />
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Notes (Optional)</label>
+                    <textarea id="notes" class="form-control" rows="3" placeholder="Enter note" @bind="newDebtFlow.Notes"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end align-items-end">
+                    <button type="submit" @onclick="AddDebtFlow" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DebtFlow newDebtFlow = new DebtFlow();
+    private string errorMessage;
+
+    // New field for searching user
+    private int searchUserId;
+
+    private async Task AddDebtFlow()
+    {
+        try
+        {
+            var existingDebts = await DebtFlowService.LoadDebtFlowAsync();
+
+            Console.WriteLine("after exissting users");
+            // Generate a unique GUID as UserId
+            newDebtFlow.DebtFormId = Guid.NewGuid().ToString();
+
+            await DebtFlowService.SaveDebtFlowAsync(newDebtFlow);
+
+            newDebtFlow = new DebtFlow();
+            errorMessage = null;
+            // navigationManager.NavigateTo("/debtForm");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred while adding the user: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+    }
+
+}
