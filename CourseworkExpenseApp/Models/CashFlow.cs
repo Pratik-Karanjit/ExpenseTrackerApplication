@@ -14,7 +14,7 @@ namespace CourseworkExpenseApp.Models
         public string FlowType { get; set; } // "Inflow" or "Outflow"
         public string TransactionTitle { get; set; }
         public DateTime? Date { get; set; }
-        public string Tag { get; set; } // Optional, can be null
+        public string Tag { get; set; } 
         public string CustomTag { get; set; } // Optional, can be null
         public string Notes { get; set; } // Optional, can be null
     }

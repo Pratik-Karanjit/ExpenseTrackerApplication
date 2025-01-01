@@ -1,15 +1,21 @@
 ﻿@page "/dashboard"
+@using CourseworkExpenseApp.Models
+@using CourseworkExpenseApp.Services
+@inject ICashFlowService CashFlowService
+@inject IDebtFlowService DebtFlowService
+@inject NavigationManager navigationManager
 
 <h1 class="fs-2 pl-7 pt-5">DASHBOARD</h1>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
+        <!-- Total Inflows -->
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2"
                       Class="pa-4 d-flex align-items-center"
                       Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
                 <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
-                    <h1 class="mb-1 text-white">Rs.1500</h1>
+                    <h1 class="mb-1 text-white">Rs.@totalInflows</h1>
                     <p class="fs-5 text-white">Total Cash Inflows</p>
                 </div>
                 <MudImage Src="/Images/currency_icon.png"
@@ -21,12 +27,13 @@
             </MudPaper>
         </MudItem>
 
+        <!-- Total Outflows -->
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2"
                       Class="pa-4 d-flex align-items-center"
                       Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
                 <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
-                    <h1 class="mb-1 text-white">Rs.1500</h1>
+                    <h1 class="mb-1 text-white">Rs.@totalOutflows</h1>
                     <p class="fs-5 text-white">Total Cash Outflows</p>
                 </div>
                 <MudImage Src="/Images/currency_icon.png"
@@ -38,13 +45,14 @@
             </MudPaper>
         </MudItem>
 
+        <!-- Total Debts -->
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2"
                       Class="pa-4 d-flex align-items-center"
                       Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
                 <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
-                    <h1 class="mb-1 text-white">Rs.1500</h1>
-                    <p class="fs-5 text-white">Total Cash Depts</p>
+                    <h1 class="mb-1 text-white">Rs.@totalDebts</h1>
+                    <p class="fs-5 text-white">Total Cash Debts</p>
                 </div>
                 <MudImage Src="/Images/currency_icon.png"
                           Alt="currency"
@@ -55,30 +63,170 @@
             </MudPaper>
         </MudItem>
 
-        <MudItem xs="12" sm="6">
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
-                        <h1>hi</h1>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
-                </MudItem>
-            </MudGrid>
+        <!-- Top 5 Highest Transactions -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2"
+                      Class="pa-4"
+                      Style="height: 320px;">
+                <h2 class="fs-3 pb-4">Top 5 Highest Transactions</h2>
+                <MudTable Items="@topTransactions" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Tag</MudTh>
+                        <MudTh>Amount (Rs.)</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.FlowType</MudTd>
+                        <MudTd>@context.Tag</MudTd>
+                        <MudTd>@context.Amount</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
         </MudItem>
 
-        <MudItem xs="12" sm="6">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%"></MudPaper>
+        <!-- Top 5 Lowest Transactions -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2"
+                      Class="pa-4"
+                      Style="height: 320px;">
+                <h2 class="fs-3 pb-4">Top 5 Lowest Transactions</h2>
+                <MudTable Items="@lowestTransactions" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Tag</MudTh>
+                        <MudTh>Amount (Rs.)</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.FlowType</MudTd>
+                        <MudTd>@context.Tag</MudTd>
+                        <MudTd>@context.Amount</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
         </MudItem>
-        <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+
+        <MudItem xs="12" sm="6" md="6">
+            <MudPaper Elevation="2"
+                      Class="pa-4"
+                      Style="height: 320px;">
+            </MudPaper>
         </MudItem>
-        <MudItem xs="12" sm="6" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+
+        <!-- Remaining Debts -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2"
+                      style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
+                 color: white;
+                 border-radius: 10px;
+                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                 height: 150px;
+                 padding: 1rem;">
+                <h1 style="color: white;" class="mb-1">Rs.@remainingDebt</h1>
+                <p style="color: white;" class="fs-5">Remaining Debts</p>
+            </MudPaper>
         </MudItem>
-        <MudItem xs="12" sm="12" md="4">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;"></MudPaper>
+
+        <!-- Cleared Debts -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2"
+                      style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
+                 color: white;
+                 border-radius: 10px;
+                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                 height: 150px;
+                 padding: 1rem;">
+                <h1 style="color: white;" class="mb-1">Rs.@clearedDebt</h1>
+                <p style="color: white;" class="fs-5">Cleared Debts</p>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Total Transactions -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2"
+                      style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
+                 color: white;
+                 border-radius: 10px;
+                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                 height: 150px;
+                 padding: 1rem;">
+                <h1 style="color: white;" class="mb-1">@totalTransactions</h1>
+                <p style="color: white;" class="fs-5">Total Transactions</p>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Total Number of Transactions -->
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2"
+                      style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
+                 color: white;
+                 border-radius: 10px;
+                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                 height: 150px;
+                 padding: 1rem;">
+                <h1 style="color: white;" class="mb-1">@totalNumberOfTransactions</h1>
+                <p style="color: white;" class="fs-5">Total Number of Transactions</p>
+            </MudPaper>
         </MudItem>
     </MudGrid>
 </MudContainer>
+
+@code {
+    private List<Transaction> topTransactions;
+    private List<Transaction> lowestTransactions; // Add a list for lowest transactions
+    private decimal totalInflows;
+    private decimal totalOutflows;
+    private decimal totalDebts;
+    private decimal clearedDebt;
+    private decimal remainingDebt;
+    private int totalTransactions;
+    private int totalNumberOfTransactions;
+
+    private class Transaction
+    {
+        public string FlowType { get; set; }
+        public string Tag { get; set; } // Added Tag property
+        public decimal Amount { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var cashFlows = await CashFlowService.LoadCashFlowAsync();
+        var debts = await DebtFlowService.LoadDebtFlowAsync();
+
+        totalInflows = cashFlows.Where(c => c.FlowType == "Inflow").Sum(c => c.Amount);
+        totalOutflows = cashFlows.Where(c => c.FlowType == "Outflow").Sum(c => c.Amount);
+        totalDebts = debts.Sum(d => d.Amount);
+        remainingDebt = totalDebts - clearedDebt;
+
+        totalNumberOfTransactions = cashFlows.Count + debts.Count;
+        totalTransactions = (int)(cashFlows.Sum(c => c.Amount) + debts.Sum(d => d.Amount) - totalOutflows);
+
+        // Combine and sort transactions with Tag
+        var transactions = cashFlows
+            .Select(c => new Transaction
+                {
+                    FlowType = c.FlowType,
+                    Amount = c.Amount,
+                    Tag = c.Tag // Fetch Tag for CashFlow
+                })
+            .Concat(debts.Select(d => new Transaction
+                {
+                    FlowType = "Debt",
+                    Amount = d.Amount,
+                    Tag = d.Tag // Fetch Tag for DebtFlow
+                }))
+            .ToList();
+
+        // Get the top 5 highest transactions
+        topTransactions = transactions
+            .OrderByDescending(t => t.Amount)
+            .Take(5)
+            .ToList();
+
+        // Get the top 5 lowest transactions
+        lowestTransactions = transactions
+            .OrderBy(t => t.Amount) // Sort in ascending order for lowest
+            .Take(5)
+            .ToList();
+    }
+}

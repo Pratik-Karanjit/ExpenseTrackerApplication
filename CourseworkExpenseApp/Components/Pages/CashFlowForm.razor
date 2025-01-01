@@ -10,7 +10,15 @@
             <h4>Cash Flow Forms</h4>
         </div>
         <div class="card-body">
-            <form>
+            <!-- Display error message if exists -->
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+
+            <form @onsubmit="AddCashFlow">
                 <!-- Amount and Inflow/Outflow -->
                 <div class="row mb-3">
                     <div class="col-md-6">
@@ -25,7 +33,6 @@
                             <option value="Outflow">Outflow</option>
                         </select>
                     </div>
-
                 </div>
 
                 <!-- Transaction Title and Date -->
@@ -46,9 +53,17 @@
                         <label for="tag" class="form-label">Tag</label>
                         <select id="tag" @bind="newCashFlow.Tag" class="form-select">
                             <option selected>Select a Tag</option>
-                            <option value="1">Tag 1</option>
-                            <option value="2">Tag 2</option>
-                            <option value="3">Tag 3</option>
+                            <option value="Yearly">Yearly</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Food">Food</option>
+                            <option value="Drinks">Drinks</option>
+                            <option value="Clothes">Clothes</option>
+                            <option value="Gadgets">Gadgets</option>
+                            <option value="Miscellaneous">Miscellaneous</option>
+                            <option value="Fuel">Fuel</option>
+                            <option value="Rent">Rent</option>
+                            <option value="EMI">EMI</option>
+                            <option value="Party">Party</option>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -64,7 +79,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end align-items-end">
-                    <button type="submit" @onclick="AddCashFlow" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
+                    <button type="submit" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
                         Submit
                     </button>
                 </div>
@@ -73,45 +88,43 @@
     </div>
 </div>
 
-
-
 @code {
     private CashFlow newCashFlow = new CashFlow();
     private string errorMessage;
-
-    // New field for searching user
-    private int searchUserId;
 
     private async Task AddCashFlow()
     {
         try
         {
-            // Log the current values of newCashFlow
-            Console.WriteLine("Debugging newCashFlow values:");
-            Console.WriteLine($"Amount: {newCashFlow.Amount}");
-            Console.WriteLine($"FlowType: {newCashFlow.FlowType}");
-            Console.WriteLine($"TransactionTitle: {newCashFlow.TransactionTitle}");
-            Console.WriteLine($"Date: {newCashFlow.Date}");
-            Console.WriteLine($"Tag: {newCashFlow.Tag}");
-            Console.WriteLine($"CustomTag: {newCashFlow.CustomTag}");
-            Console.WriteLine($"Notes: {newCashFlow.Notes}");
-            var existingUsers = await CashFlowService.LoadCashFlowAsync();
+            // Load existing cash flows
+            var existingCashFlows = await CashFlowService.LoadCashFlowAsync();
 
-            Console.WriteLine("after exissting users");
-            // Generate a unique GUID as UserId
+            // Calculate the current balance
+            decimal currentBalance = existingCashFlows
+                .Where(c => c.FlowType == "Inflow").Sum(c => c.Amount)
+                - existingCashFlows.Where(c => c.FlowType == "Outflow").Sum(c => c.Amount);
+
+            // Check if there is sufficient balance for outflows
+            if (newCashFlow.FlowType == "Outflow" && newCashFlow.Amount > currentBalance)
+            {
+                errorMessage = $"Insufficient balance for Outflow! Current balance: {currentBalance:C}.";
+                return;
+            }
+
+            // Generate a unique GUID as CashFlowId
             newCashFlow.CashFlowId = Guid.NewGuid().ToString();
 
+            // Save the new cash flow record
             await CashFlowService.SaveCashFlowAsync(newCashFlow);
 
+            // Reset the form and clear errors
             newCashFlow = new CashFlow();
             errorMessage = null;
-            // navigationManager.NavigateTo("/debtForm");
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred while adding the user: {ex.Message}";
-            Console.WriteLine(errorMessage);
+            errorMessage = $"An error occurred while adding the cash flow: {ex.Message}";
         }
     }
-
 }
+

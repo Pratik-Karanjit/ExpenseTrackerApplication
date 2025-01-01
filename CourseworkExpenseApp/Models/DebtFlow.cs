@@ -18,6 +18,8 @@ namespace CourseworkExpenseApp.Models
         public string Tag { get; set; } // Optional, can be null
         public string CustomTag { get; set; } // Optional, can be null
         public string Notes { get; set; } // Optional, can be null
+        public string FlowType { get; set; }
+        public bool IsCleared { get; set; }
 
     }
 
