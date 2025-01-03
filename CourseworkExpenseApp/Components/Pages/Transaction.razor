@@ -1,16 +1,204 @@
 ﻿@page "/transaction"
+@using CourseworkExpenseApp.Models
+@using CourseworkExpenseApp.Services
+@inject ICashFlowService CashFlowService
+@inject NavigationManager navigationManager
 
-<h1>Transaction Page</h1>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card p-3 mb-4">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="filterTags" class="form-label">Tags</label>
+                        <select id="filterTags" class="form-select" value="@selectedTag" @onchange="(e) => OnTagChanged(e)">
+                            <option value="">Choose...</option>
+                            <option value="Yearly">Yearly</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Food">Food</option>
+                            <option value="Drinks">Drinks</option>
+                            <option value="Clothes">Clothes</option>
+                            <option value="Gadgets">Gadgets</option>
+                            <option value="Miscellaneous">Miscellaneous</option>
+                            <option value="Fuel">Fuel</option>
+                            <option value="Rent">Rent</option>
+                            <option value="EMI">EMI</option>
+                            <option value="Party">Party</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="filterType" class="form-label">Type</label>
+                        <select id="filterType" class="form-select" value="@selectedType" @onchange="(e) => OnTypeChanged(e)">
+                            <option value="">Choose...</option>
+                            <option value="Inflow">Inflow</option>
+                            <option value="Outflow">Outflow</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="filterDate" class="form-label">Date</label>
+                        <input type="date" id="filterDate" class="form-control" value="@selectedDate" @onchange="(e) => OnDateChanged(e)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<p role="status">Current count: @currentCount</p>
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <input type="text" class="form-control" placeholder="Search by title" value="@searchQuery" @oninput="(e) => OnSearchChanged(e)">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" value="@sortBy" @onchange="(e) => OnSortChanged(e)">
+                <option value="Date">Sort By</option>
+                <option value="Amount">Amount</option>
+                <option value="Date">Date</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Table Section -->
+        <div class="col-12">
+            <table class="table table-bordered table-striped">
+                <thead class="table-primary">
+                    <tr>
+                        <th style="background-color: #594AE2; color:white;">Title</th>
+                        <th style="background-color: #594AE2; color:white;">Labels</th>
+                        <th style="background-color: #594AE2; color:white;">Tags</th>
+                        <th style="background-color: #594AE2; color:white;">Custom Tag</th>
+                        <th style="background-color: #594AE2; color:white;">Notes</th>
+                        <th style="background-color: #594AE2; color:white;">Transaction Date</th>
+                        <th style="background-color: #594AE2; color:white;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (filteredCashFlows.Any())
+                    {
+                        @foreach (var cashFlow in filteredCashFlows)
+                        {
+                            <tr>
+                                <td>@cashFlow.TransactionTitle</td>
+                                <td>@cashFlow.FlowType</td>
+                                <td>@cashFlow.Tag</td>
+                                <td>@cashFlow.CustomTag</td>
+                                <td>@cashFlow.Notes</td>
+                                <td>@cashFlow.Date?.ToString("MMMM dd, yyyy")</td>
+                                <td>@cashFlow.Amount</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center">No transactions available.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+    <!-- Rest of the table HTML remains the same -->
 
 @code {
-    private int currentCount = 0;
+    private List<CashFlow> cashFlows = new();
+    private List<CashFlow> filteredCashFlows = new();
 
-    private void IncrementCount()
+    private string selectedTag = "";
+    private string selectedType = "";
+    private DateTime? selectedDate = null;
+    private string searchQuery = "";
+    private string sortBy = "Date";
+
+    protected override async Task OnInitializedAsync()
     {
-        currentCount++;
+        try
+        {
+            cashFlows = await CashFlowService.LoadCashFlowAsync();
+            filteredCashFlows = cashFlows;
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cash flow: {ex.Message}");
+        }
+    }
+
+    private void OnTagChanged(ChangeEventArgs e)
+    {
+        selectedTag = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void OnTypeChanged(ChangeEventArgs e)
+    {
+        selectedType = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime date))
+        {
+            selectedDate = date;
+        }
+        else
+        {
+            selectedDate = null;
+        }
+        ApplyFilters();
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void OnSortChanged(ChangeEventArgs e)
+    {
+        sortBy = e.Value?.ToString() ?? "Date";
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var query = cashFlows.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(selectedTag))
+        {
+            query = query.Where(c => c.Tag?.Contains(selectedTag, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        if (!string.IsNullOrEmpty(selectedType))
+        {
+            query = query.Where(c => c.FlowType?.Equals(selectedType, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        if (selectedDate.HasValue)
+        {
+            query = query.Where(c => c.Date?.Date == selectedDate.Value.Date);
+        }
+
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            query = query.Where(c => c.TransactionTitle?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        switch (sortBy)
+        {
+            case "Date":
+                query = query.OrderByDescending(c => c.Date);
+                break;
+            case "Title":
+                query = query.OrderBy(c => c.TransactionTitle);
+                break;
+            case "Amount":
+                query = query.OrderByDescending(c => c.Amount);
+                break;
+        }
+
+        filteredCashFlows = query.ToList();
+        StateHasChanged();
     }
 }
