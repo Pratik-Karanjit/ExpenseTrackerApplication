@@ -167,12 +167,77 @@
                 <p style="color: white;" class="fs-5">Total Number of Transactions</p>
             </MudPaper>
         </MudItem>
+
+        <!-- Pending Debts -->
+        <MudItem xs="12" sm="12" md="12">
+            <MudPaper Elevation="2"
+                      style="background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+                     color: white;
+                     border-radius: 10px;
+                     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                     height: auto;
+                     min-height: 400px;
+                     padding: 1rem;
+                     margin-bottom: 3rem">
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <p style="color: black;" class="fs-5 mb-0">Pending Debts</p>
+                    <MudSelect T="string"
+                               Value="selectedMonth"
+                               ValueChanged="@((string value) => FilterByMonth(value))"
+                               Class="ml-auto"
+                               Style="width: 200px !important; max-width: 200px !important;"
+                               Variant="Variant.Outlined"
+                               Dense="true"
+                               AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var month in monthOptions)
+                        {
+                            <MudSelectItem Value="@month">@month</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+                <MudTable Items="@pendingDebts"
+                          Dense="true"
+                          Hover="true"
+                          Bordered="true"
+                          Striped="true">
+                    <HeaderContent>
+                        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Debt Sources</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Transaction Date</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Due Date</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white; text-align: right; font-size: 1.1rem; padding: 15px;">Amount (Rs.)</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Debt Source" Style="color: black; background-color: white; font-size: 1rem;">
+                            @context.DebtFormSource
+                        </MudTd>
+                        <MudTd DataLabel="Transaction Date" Style="color: black; background-color: white; font-size: 1rem;">
+                            @(context.TransactionDate?.ToString("dd/MM/yyyy"))
+                        </MudTd>
+                        <MudTd DataLabel="Due Date" Style="color: black; background-color: white; font-size: 1rem;">
+                            @(context.DueDate?.ToString("dd/MM/yyyy"))
+                        </MudTd>
+                        <MudTd DataLabel="Amount" Style="color: black; background-color: white; text-align: right; font-size: 1rem;">
+                            @context.Amount.ToString("N2")
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        </MudItem>
+
+
+
     </MudGrid>
 </MudContainer>
 
 @code {
     private List<Transaction> topTransactions;
-    private List<Transaction> lowestTransactions; // Add a list for lowest transactions
+    private List<Transaction> lowestTransactions;
+
+    private List<DebtFlow> allPendingDebts;
+    private List<DebtFlow> pendingDebts;
+    private string selectedMonth = "All Months";
+    private List<string> monthOptions = new();
+
     private decimal totalInflows;
     private decimal totalOutflows;
     private decimal totalDebts;
@@ -184,7 +249,7 @@
     private class Transaction
     {
         public string FlowType { get; set; }
-        public string Tag { get; set; } // Added Tag property
+        public string Tag { get; set; }
         public decimal Amount { get; set; }
     }
 
@@ -201,32 +266,66 @@
         totalNumberOfTransactions = cashFlows.Count + debts.Count;
         totalTransactions = (int)(cashFlows.Sum(c => c.Amount) + debts.Sum(d => d.Amount) - totalOutflows);
 
-        // Combine and sort transactions with Tag
         var transactions = cashFlows
             .Select(c => new Transaction
                 {
                     FlowType = c.FlowType,
                     Amount = c.Amount,
-                    Tag = c.Tag // Fetch Tag for CashFlow
+                    Tag = c.Tag
                 })
             .Concat(debts.Select(d => new Transaction
                 {
                     FlowType = "Debt",
                     Amount = d.Amount,
-                    Tag = d.Tag // Fetch Tag for DebtFlow
+                    Tag = d.Tag
                 }))
             .ToList();
 
-        // Get the top 5 highest transactions
         topTransactions = transactions
             .OrderByDescending(t => t.Amount)
             .Take(5)
             .ToList();
 
-        // Get the top 5 lowest transactions
         lowestTransactions = transactions
-            .OrderBy(t => t.Amount) // Sort in ascending order for lowest
+            .OrderBy(t => t.Amount)
             .Take(5)
+            .ToList();
+
+        await LoadPendingDebts();
+    }
+
+    private async Task LoadPendingDebts()
+    {
+        var debts = await DebtFlowService.LoadDebtFlowAsync();
+        // Store all pending debts in a separate list
+        allPendingDebts = debts.Where(d => !d.IsCleared).OrderBy(d => d.DueDate).ToList();
+        // Initialize displayed debts with all pending debts
+        pendingDebts = allPendingDebts.ToList();
+
+        monthOptions = allPendingDebts
+            .Where(d => d.TransactionDate.HasValue)
+            .Select(d => d.TransactionDate.Value.ToString("MMMM yyyy"))
+            .Distinct()
+            .OrderByDescending(m => DateTime.ParseExact(m, "MMMM yyyy", null))
+            .ToList();
+
+        monthOptions.Insert(0, "All Months");
+    }
+
+    private void FilterByMonth(string selectedMonth)
+    {
+        this.selectedMonth = selectedMonth;
+
+        if (selectedMonth == "All Months")
+        {
+            pendingDebts = allPendingDebts.ToList();
+            return;
+        }
+
+        var selectedDate = DateTime.ParseExact(selectedMonth, "MMMM yyyy", null);
+        pendingDebts = allPendingDebts
+            .Where(d => d.TransactionDate?.Month == selectedDate.Month
+                     && d.TransactionDate?.Year == selectedDate.Year)
             .ToList();
     }
 }
