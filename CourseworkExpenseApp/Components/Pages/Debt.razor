@@ -1,7 +1,244 @@
 ﻿@page "/debt"
+@using CourseworkExpenseApp.Models
+@using CourseworkExpenseApp.Services
+@inject IDebtFlowService DebtFlowService
+@inject NavigationManager navigationManager
 
-<h3>Debt</h3>
+
+<style>
+    .table .badge {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card p-3 mb-4">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="filterTags" class="form-label">Tags</label>
+                        <select id="filterTags" class="form-select" value="@selectedTag" @onchange="(e) => OnTagChanged(e)">
+                            <option value="">Choose...</option>
+                            <option value="Loan">Loan</option>
+                            <option value="Bills">Bills</option>
+                            <option value="House">House</option>
+                        </select>
+                    </div>
+                   
+                    <div class="col-md-3 mb-3">
+                        <label for="filterDate" class="form-label">Date</label>
+                        <input type="date" id="filterDate" class="form-control" value="@selectedDate" @onchange="(e) => OnDateChanged(e)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <input type="text" class="form-control" placeholder="Search by title" value="@searchQuery" @oninput="(e) => OnSearchChanged(e)">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" value="@sortBy" @onchange="(e) => OnSortChanged(e)">
+            
+                <option value="Date">Date</option>
+                <option value="Amount">Amount</option>
+            </select>
+        </div>
+        <button class="btn btn-secondary mt-3" @onclick="ClearFilters">Clear Filters</button>
+
+    </div>
+    <div class="row">
+        <!-- Table Section -->
+        <div class="col-12">
+            <table class="table table-bordered">
+                <thead class="table-primary">
+                    <tr>
+                        <th style="background-color: #594AE2; color:white;">Source</th>
+                        <th style="background-color: #594AE2; color:white;">Tags</th>
+                        <th style="background-color: #594AE2; color:white;">Custom Tag</th>
+                        <th style="background-color: #594AE2; color:white;">Notes</th>
+                        <th style="background-color: #594AE2; color:white;">Transaction Date</th>
+                        <th style="background-color: #594AE2; color:white;">Due Date</th>
+                        <th style="background-color: @((sortBy == "Amount") ? "#ADD8E6" : "#594AE2"); color:white;">Amount</th>
+                        <th style="background-color: #594AE2; color:white;">Status</th>
+                        <th style="background-color: #594AE2; color:white;">Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (filteredDebtFlows.Any())
+                    {
+                        @foreach (var cashFlow in filteredDebtFlows)
+                        {
+                            <tr style="position: relative;">
+                                <td>@cashFlow.DebtFormSource</td>
+                                <td>@cashFlow.Tag</td>
+                                <td>@(!string.IsNullOrEmpty(cashFlow.CustomTag) ? cashFlow.CustomTag : "---")</td>
+                                <td>@(!string.IsNullOrEmpty(cashFlow.Notes) ? cashFlow.Notes : "---")</td>
+                                <td>@cashFlow.TransactionDate?.ToString("MMMM dd, yyyy")</td>
+                                <td>@cashFlow.DueDate?.ToString("MMMM dd, yyyy")</td>
+                                <td style="background-color: @((sortBy == "Amount") ? "#ADD8E6" : "#ffffff"); color:@((sortBy == "Amount") ? "#ffffff" : "#111111");">
+                                    @cashFlow.Amount
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm @((cashFlow.IsCleared) ? "btn-success" : "btn-danger")">
+                                        @(cashFlow.IsCleared ? "Cleared" : "Pending")
+                                    </button>
+                                   
+                                </td>
+                                <td>
+                                    @if (!cashFlow.IsCleared)
+                                    {
+                                        <button style="background-color:#594AE2; color:white; padding: 6px 10px; border-radius: 5px;"
+                                                @onclick="() => ClearDebtAsync(cashFlow.DebtFormId)">
+                                            Clear Debt
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center">No transactions available.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
 
 @code {
+    private List<DebtFlow> debtFlows = new();
+    private List<DebtFlow> filteredDebtFlows = new();
 
+    private string selectedTag = "";
+    private string selectedType = "";
+    private DateTime? selectedDate = null;
+    private string searchQuery = "";
+    private string sortBy = "Date";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            debtFlows = await DebtFlowService.LoadDebtFlowAsync();
+            filteredDebtFlows = debtFlows;
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cash flow: {ex.Message}");
+        }
+    }
+
+    private void OnTagChanged(ChangeEventArgs e)
+    {
+        selectedTag = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void OnTypeChanged(ChangeEventArgs e)
+    {
+        selectedType = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParseExact(e.Value?.ToString(), "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime date))
+        {
+            selectedDate = date;
+        }
+        else
+        {
+            selectedDate = null; // Clear if the input is invalid
+        }
+        ApplyFilters();
+    }
+
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void OnSortChanged(ChangeEventArgs e)
+    {
+        sortBy = e.Value?.ToString() ?? "Date";
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var query = debtFlows.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(selectedTag))
+        {
+            query = query.Where(c => c.Tag?.Contains(selectedTag, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        if (!string.IsNullOrEmpty(selectedType))
+        {
+            query = query.Where(c => c.FlowType?.Equals(selectedType, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        if (selectedDate.HasValue)
+        {
+            query = query.Where(c => c.TransactionDate?.Date == selectedDate.Value.Date);
+        }  
+
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            query = query.Where(c => c.DebtFormSource?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        switch (sortBy)
+        {
+            case "Date":
+                query = query.OrderByDescending(c => c.TransactionDate);
+                break;
+            case "Amount":
+                query = query.OrderByDescending(c => c.Amount);
+                break;
+        }
+
+        filteredDebtFlows = query.ToList();
+        StateHasChanged();
+    }
+    private void ClearFilters()
+    {
+        selectedTag = "";
+        selectedDate = null;
+        searchQuery = "";
+        sortBy = "Date";
+        ApplyFilters();
+    }
+
+    private async Task ClearDebtAsync(string debtFormId)
+    {
+        try
+        {
+            await DebtFlowService.MarkAsClearedAsync(debtFormId);
+
+            // Refresh the data
+            debtFlows = await DebtFlowService.LoadDebtFlowAsync();
+            ApplyFilters(); // This will update filteredDebtFlows
+
+            StateHasChanged(); // Ensure UI updates
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing debt: {ex.Message}");
+            // You might want to add error handling UI here
+        }
+    }
 }

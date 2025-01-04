@@ -78,5 +78,30 @@ namespace CourseworkExpenseApp.Services
                 throw;
             }
         }
+        public async Task MarkAsClearedAsync(string debtFormId)
+        {
+            try
+            {
+                var debtFlows = await LoadDebtFlowAsync();
+
+                var debtFlow = debtFlows.FirstOrDefault(df => df.DebtFormId == debtFormId);
+                if (debtFlow == null)
+                {
+                    throw new Exception($"No debt flow found with DebtFormId: {debtFormId}");
+                }
+
+                // Mark the debt flow as cleared
+                debtFlow.IsCleared = true;
+
+                // Save updated list back to the file
+                await SaveDebtFlowAsync(debtFlows);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error marking debt flow as cleared: {ex.Message}");
+                throw;
+            }
+        }
+
     }
 }

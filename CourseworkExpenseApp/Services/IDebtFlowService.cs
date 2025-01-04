@@ -14,5 +14,8 @@ namespace CourseworkExpenseApp.Services
         Task SaveDebtFlowAsync(DebtFlow debtFlow);
 
         Task<List<DebtFlow>> LoadDebtFlowAsync();
+
+        Task MarkAsClearedAsync(string debtFormId);
+
     }
 }
