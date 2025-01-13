@@ -106,9 +106,13 @@
         </MudItem>
 
         <MudItem xs="12" sm="6" md="6">
-            <MudPaper Elevation="2"
-                      Class="pa-4"
-                      Style="height: 320px;">
+            <MudPaper Elevation="2" Class="pa-4 d-flex align-center justify-center" Style="height: 320px; width: 100%; z-index: 1000; position: relative;">
+                <MudChart ChartType="ChartType.Pie"
+                          Width="100%"
+                          Height="200px"
+                          InputData="@chartData.ToArray()"
+                          InputLabels="@formattedLabels.ToArray()"
+                          ChartOptions="@options" />
             </MudPaper>
         </MudItem>
 
@@ -232,7 +236,6 @@
 @code {
     private List<Transaction> topTransactions;
     private List<Transaction> lowestTransactions;
-
     private List<DebtFlow> allPendingDebts;
     private List<DebtFlow> pendingDebts;
     private string selectedMonth = "All Months";
@@ -241,10 +244,24 @@
     private decimal totalInflows;
     private decimal totalOutflows;
     private decimal totalDebts;
-    private decimal clearedDebt;
     private decimal remainingDebt;
+    private decimal clearedDebt;
     private int totalTransactions;
     private int totalNumberOfTransactions;
+
+    private int selectedIndex = -1;
+    private List<double> chartData = new();
+    private List<string> chartLabels = new();
+    private List<string> formattedLabels = new();
+
+    private ChartOptions options = new()
+        {
+            ChartPalette = new[] {
+            "#1DE9B6",  // Darker green for inflows
+            "#2979FF",  // Darker red for outflows
+            "#FFC400"   // Dark amber for debts
+    },
+        };
 
     private class Transaction
     {
@@ -261,10 +278,14 @@
         totalInflows = cashFlows.Where(c => c.FlowType == "Inflow").Sum(c => c.Amount);
         totalOutflows = cashFlows.Where(c => c.FlowType == "Outflow").Sum(c => c.Amount);
         totalDebts = debts.Sum(d => d.Amount);
-        remainingDebt = totalDebts - clearedDebt;
+      
+        clearedDebt = debts.Where(d => d.IsCleared).Sum(d => d.Amount);
+        remainingDebt = debts.Where(d => !d.IsCleared).Sum(d => d.Amount);
 
         totalNumberOfTransactions = cashFlows.Count + debts.Count;
         totalTransactions = (int)(cashFlows.Sum(c => c.Amount) + debts.Sum(d => d.Amount) - totalOutflows);
+
+        PrepareChartData();
 
         var transactions = cashFlows
             .Select(c => new Transaction
@@ -292,6 +313,28 @@
             .ToList();
 
         await LoadPendingDebts();
+    }
+
+    private void PrepareChartData()
+    {
+        chartData = new List<double>
+        {
+            Convert.ToDouble(totalInflows),
+            Convert.ToDouble(totalOutflows),
+            Convert.ToDouble(totalDebts)
+        };
+
+        chartLabels = new List<string> { "Inflows", "Outflows", "Debts" };
+
+        // Calculate percentages and format labels
+        double total = chartData.Sum();
+        formattedLabels = new List<string>();
+
+        for (int i = 0; i < chartLabels.Count; i++)
+        {
+            double percentage = (chartData[i] / total) * 100;
+            formattedLabels.Add($"{chartLabels[i]} ({percentage:F1}%)");
+        }
     }
 
     private async Task LoadPendingDebts()

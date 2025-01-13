@@ -90,10 +90,7 @@ namespace CourseworkExpenseApp.Services
                     throw new Exception($"No debt flow found with DebtFormId: {debtFormId}");
                 }
 
-                // Mark the debt flow as cleared
                 debtFlow.IsCleared = true;
-
-                // Save updated list back to the file
                 await SaveDebtFlowAsync(debtFlows);
             }
             catch (Exception ex)
@@ -101,7 +98,7 @@ namespace CourseworkExpenseApp.Services
                 Console.WriteLine($"Error marking debt flow as cleared: {ex.Message}");
                 throw;
             }
-        }
 
+        }
     }
 }
