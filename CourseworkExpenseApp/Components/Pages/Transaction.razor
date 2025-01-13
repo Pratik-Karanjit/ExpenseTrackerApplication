@@ -8,8 +8,8 @@
     <div class="row">
         <div class="col-12">
             <div class="card p-3 mb-4">
-                <div class="row">
-                    <div class="col-md-3 mb-3">
+                <div class="row flex justify-content-between align-items-center">
+                    <div class="col-md-4 mb-4">
                         <label for="filterTags" class="form-label">Tags</label>
                         <select id="filterTags" class="form-select" value="@selectedTag" @onchange="(e) => OnTagChanged(e)">
                             <option value="">Choose...</option>
@@ -26,7 +26,7 @@
                             <option value="Party">Party</option>
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-4">
                         <label for="filterType" class="form-label">Type</label>
                         <select id="filterType" class="form-select" value="@selectedType" @onchange="(e) => OnTypeChanged(e)">
                             <option value="">Choose...</option>
@@ -34,7 +34,7 @@
                             <option value="Outflow">Outflow</option>
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-4">
                         <label for="filterDate" class="form-label">Date</label>
                         <input type="date" id="filterDate" class="form-control" value="@selectedDate" @onchange="(e) => OnDateChanged(e)">
                     </div>
@@ -54,6 +54,8 @@
                 <option value="Date">Date</option>
             </select>
         </div>
+
+        <button class="btn btn-secondary mt-3" @onclick="ClearFilters">Clear Filters</button>
     </div>
     <div class="row">
         <!-- Table Section -->
@@ -79,8 +81,8 @@
                                 <td>@cashFlow.TransactionTitle</td>
                                 <td>@cashFlow.FlowType</td>
                                 <td>@cashFlow.Tag</td>
-                                <td>@cashFlow.CustomTag</td>
-                                <td>@cashFlow.Notes</td>
+                                <td>@(!string.IsNullOrEmpty(cashFlow.CustomTag) ? cashFlow.CustomTag : "---")</td>
+                                <td>@(!string.IsNullOrEmpty(cashFlow.Notes) ? cashFlow.Notes : "---")</td>
                                 <td>@cashFlow.Date?.ToString("MMMM dd, yyyy")</td>
                                 <td>@cashFlow.Amount</td>
                             </tr>
@@ -98,7 +100,7 @@
     </div>
 </div>
 
-    <!-- Rest of the table HTML remains the same -->
+<!-- Rest of the table HTML remains the same -->
 
 @code {
     private List<CashFlow> cashFlows = new();
@@ -200,5 +202,15 @@
 
         filteredCashFlows = query.ToList();
         StateHasChanged();
+    }
+
+    private void ClearFilters()
+    {
+        selectedTag = "";
+        selectedType = "";
+        selectedDate = null;
+        searchQuery = "";
+        sortBy = "Date";
+        ApplyFilters();
     }
 }

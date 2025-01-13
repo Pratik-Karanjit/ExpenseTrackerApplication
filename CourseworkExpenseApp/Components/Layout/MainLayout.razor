@@ -1,13 +1,56 @@
 ﻿@inherits LayoutComponentBase
+@using CourseworkExpenseApp.Models
+@using CourseworkExpenseApp.Services
+@inject IDebtFlowService DebtFlowService
+@inject NavigationManager navigationManager
+@inject ICashFlowService CashFlowService
+
+
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+<style>
+    .app-bar-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .total-balance {
+        background-color: #ffffff; /* White background */
+        color: #007bff; /* Blue text to complement the bar */
+        padding: 5px 10px; /* Add padding for better spacing */
+        border-radius: 5px; /* Rounded corners */
+        font-weight: bold; /* Make the text bold */
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
+        transition: transform 0.2s, box-shadow 0.2s; /* Add animation for hover effect */
+    }
+
+        .total-balance:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
+        }
+
+
+</style>
+
 <MudLayout>
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle"/>
-        Expense Tracker Application
+        <div class="app-bar-content">
+            <div>
+                Expense Tracker Application
+            </div>
+            <div class="total-balance">
+                Total Balance: @totalBalance
+            </div>
+        </div>
+
+
+
     </MudAppBar>
 
     <MudDrawer @bind-Open="@_drawerOpen">
@@ -25,4 +68,54 @@
 
         _drawerOpen = !_drawerOpen;
     }
+
+
+    @code {
+        private string errorMessage;
+        private decimal totalInflows;
+        private decimal totalOutflows;
+        private decimal totalClearedDebts;
+        private decimal totalBalance;
+
+
+        private async Task CalculateTotalBalanceAsync()
+        {
+            try
+            {
+                var cashFlows = await CashFlowService.LoadCashFlowAsync();
+                var debts = await DebtFlowService.LoadDebtFlowAsync();
+
+                totalInflows = cashFlows
+                    .Where(c => c.FlowType == "Inflow")
+                    .Sum(c => c.Amount);
+
+                totalOutflows = cashFlows
+                    .Where(c => c.FlowType == "Outflow")
+                    .Sum(c => c.Amount);
+
+                totalClearedDebts = debts
+                    .Where(d => d.IsCleared)
+                    .Sum(d => d.Amount);
+
+                totalBalance = totalInflows - totalOutflows - totalClearedDebts;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error calculating total balance: {ex.Message}";
+            }
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            try
+            {
+                await CalculateTotalBalanceAsync();
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error initializing data: {ex.Message}";
+            }
+        }
+    }
+
 }

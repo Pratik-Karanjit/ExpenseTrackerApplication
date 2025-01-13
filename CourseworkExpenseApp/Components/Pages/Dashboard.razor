@@ -283,7 +283,7 @@
         remainingDebt = debts.Where(d => !d.IsCleared).Sum(d => d.Amount);
 
         totalNumberOfTransactions = cashFlows.Count + debts.Count;
-        totalTransactions = (int)(cashFlows.Sum(c => c.Amount) + debts.Sum(d => d.Amount) - totalOutflows);
+        totalTransactions = (int)(totalInflows + totalDebts - totalOutflows);
 
         PrepareChartData();
 

@@ -3,6 +3,7 @@
 @using CourseworkExpenseApp.Services
 @inject ICashFlowService CashFlowService
 @inject NavigationManager navigationManager
+@inject IDebtFlowService DebtFlowService
 
 <div class="container mt-5">
     <div class="card">
@@ -18,40 +19,44 @@
                 </div>
             }
 
-            <form @onsubmit="AddCashFlow">
-                <!-- Amount and Inflow/Outflow -->
+            <EditForm Model="@newCashFlow" OnValidSubmit="AddCashFlow">
+                <DataAnnotationsValidator />
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="amount" class="form-label">Amount</label>
-                        <input type="number" id="amount" class="form-control" placeholder="Enter your Amount" @bind="newCashFlow.Amount" />
+                        <InputNumber id="amount" class="form-control" placeholder="Enter your Amount" @bind-Value="newCashFlow.Amount" />
+                        <ValidationMessage For="@(() => newCashFlow.Amount)" />
                     </div>
                     <div class="col-md-6">
                         <label for="flowType" class="form-label">Inflow/Outflow</label>
-                        <select id="flowType" @bind="newCashFlow.FlowType" class="form-select">
+                        <InputSelect id="flowType" class="form-select" @bind-Value="newCashFlow.FlowType">
                             <option value="" disabled selected>Select Flow Type</option>
                             <option value="Inflow">Inflow</option>
                             <option value="Outflow">Outflow</option>
-                        </select>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => newCashFlow.FlowType)" />
                     </div>
                 </div>
 
-                <!-- Transaction Title and Date -->
-                <div class="row mb-3 mt-5">
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="transactionTitle" class="form-label">Transaction Title</label>
-                        <input type="text" id="transactionTitle" class="form-control" placeholder="Enter your Transaction Title" @bind="newCashFlow.TransactionTitle" />
+                        <InputText id="transactionTitle" class="form-control" placeholder="Enter your Transaction Title" @bind-Value="newCashFlow.TransactionTitle" />
+                        <ValidationMessage For="@(() => newCashFlow.TransactionTitle)" />
                     </div>
                     <div class="col-md-6">
                         <label for="date" class="form-label">Date</label>
-                        <input type="date" id="date" class="form-control" @bind="newCashFlow.Date" />
+                        <InputDate @bind-Value="newCashFlow.Date" class="form-control" id="date" />
+                        <ValidationMessage For="@(() => newCashFlow.Date)" />
                     </div>
                 </div>
 
-                <!-- Tag and Custom Tag -->
-                <div class="row mb-3 mt-5">
+            
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="tag" class="form-label">Tag</label>
-                        <select id="tag" @bind="newCashFlow.Tag" class="form-select">
+                        <InputSelect id="tag" class="form-select" @bind-Value="newCashFlow.Tag">
                             <option selected>Select a Tag</option>
                             <option value="Yearly">Yearly</option>
                             <option value="Monthly">Monthly</option>
@@ -64,26 +69,27 @@
                             <option value="Rent">Rent</option>
                             <option value="EMI">EMI</option>
                             <option value="Party">Party</option>
-                        </select>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => newCashFlow.Tag)" />
                     </div>
                     <div class="col-md-6">
                         <label for="customTag" class="form-label">Custom Tag (Optional)</label>
-                        <input type="text" id="customTag" class="form-control" placeholder="Custom Tag" @bind="newCashFlow.CustomTag" />
+                        <InputText id="customTag" class="form-control" placeholder="Custom Tag" @bind-Value="newCashFlow.CustomTag" />
                     </div>
                 </div>
 
-                <!-- Notes -->
-                <div class="mb-3 mt-5">
+                <div class="mb-3">
                     <label for="notes" class="form-label">Notes (Optional)</label>
-                    <textarea id="notes" class="form-control" rows="3" placeholder="Enter note" @bind="newCashFlow.Notes"></textarea>
+                    <InputTextArea id="notes" class="form-control" rows="3" placeholder="Enter note" @bind-Value="newCashFlow.Notes" />
                 </div>
 
-                <div class="d-flex justify-content-end align-items-end">
+                <div class="d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
                         Submit
                     </button>
                 </div>
-            </form>
+            </EditForm>
+
         </div>
     </div>
 </div>
@@ -91,18 +97,32 @@
 @code {
     private CashFlow newCashFlow = new CashFlow();
     private string errorMessage;
+        private decimal totalInflows;
+        private decimal totalOutflows;
+        private decimal totalClearedDebts;
+    private decimal currentBalance;
 
     private async Task AddCashFlow()
     {
         try
         {
-            // Load existing cash flows
-            var existingCashFlows = await CashFlowService.LoadCashFlowAsync();
 
-            // Calculate the current balance
-            decimal currentBalance = existingCashFlows
-                .Where(c => c.FlowType == "Inflow").Sum(c => c.Amount)
-                - existingCashFlows.Where(c => c.FlowType == "Outflow").Sum(c => c.Amount);
+            var cashFlows = await CashFlowService.LoadCashFlowAsync();
+            var debts = await DebtFlowService.LoadDebtFlowAsync();
+
+            totalInflows = cashFlows
+                .Where(c => c.FlowType == "Inflow")
+                .Sum(c => c.Amount);
+
+            totalOutflows = cashFlows
+                .Where(c => c.FlowType == "Outflow")
+                .Sum(c => c.Amount);
+
+            totalClearedDebts = debts
+                .Where(d => d.IsCleared)
+                .Sum(d => d.Amount);
+
+            currentBalance = totalInflows - totalOutflows - totalClearedDebts;
 
             // Check if there is sufficient balance for outflows
             if (newCashFlow.FlowType == "Outflow" && newCashFlow.Amount > currentBalance)
@@ -120,6 +140,8 @@
             // Reset the form and clear errors
             newCashFlow = new CashFlow();
             errorMessage = null;
+
+            navigationManager.NavigateTo(navigationManager.Uri, forceLoad: true);
         }
         catch (Exception ex)
         {

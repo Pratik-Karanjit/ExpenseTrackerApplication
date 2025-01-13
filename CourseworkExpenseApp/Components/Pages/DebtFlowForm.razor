@@ -38,7 +38,7 @@
                 <!-- Tag and Custom Tag -->
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="tag" class="form-label">Tag (Optional)</label>
+                        <label for="tag" class="form-label">Tag</label>
                         <select id="tag" @bind="newDebtFlow.Tag" class="form-select">
                             <option selected>Select a Tag</option>
                             <option value="Loan">Loan</option>
@@ -94,6 +94,8 @@
             newDebtFlow = new DebtFlow();
             errorMessage = null;
             // navigationManager.NavigateTo("/debtForm");
+
+            navigationManager.NavigateTo(navigationManager.Uri, forceLoad: true);
         }
         catch (Exception ex)
         {
