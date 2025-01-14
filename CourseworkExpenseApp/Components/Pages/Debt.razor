@@ -20,7 +20,7 @@
         <div class="col-12">
             <div class="card p-3 mb-4">
                 <div class="row">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-6 mb-6">
 
                         <label for="filterTags" class="form-label">Tags</label>
                         <select id="filterTags" class="form-select" value="@selectedTag" @onchange="(e) => OnTagChanged(e)">
@@ -31,7 +31,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-6 mb-6">
                         <label for="filterDate" class="form-label">Date</label>
                         <input type="date" id="filterDate" class="form-control" value="@selectedDate" @onchange="(e) => OnDateChanged(e)">
                     </div>
@@ -287,6 +287,8 @@
             debtFlows = await DebtFlowService.LoadDebtFlowAsync();
             await CalculateTotalBalanceAsync();
             ApplyFilters();
+
+            navigationManager.NavigateTo(navigationManager.Uri, forceLoad: true);
         }
         catch (Exception ex)
         {

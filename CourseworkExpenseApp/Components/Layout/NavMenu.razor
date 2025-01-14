@@ -1,13 +1,52 @@
 ﻿
-<h1 class="fw-bold mt-5">WalletWise</h1>
+<div style="display:flex; justify-content:center; align-items: center; margin-top:1rem;">
+<h2 class="fw-bold">WalletWise</h2>
+</div>
 
-<MudNavMenu>
-    <MudNavLink Href="/register" Match="NavLinkMatch.Prefix">Register</MudNavLink>
-    <MudNavLink Href="/login" Match="NavLinkMatch.Prefix">Login</MudNavLink>
-    <MudNavLink Href="/debtFlowForm" Match="NavLinkMatch.Prefix">Debt Flow Form</MudNavLink>
-    <MudNavLink Href="/dashboard" Match="NavLinkMatch.Prefix">Dashboard</MudNavLink>
-    <MudNavLink Href="/transaction" Match="NavLinkMatch.Prefix">Transaction</MudNavLink>
-    <MudNavLink Href="/debt" Match="NavLinkMatch.Prefix">Debt</MudNavLink>
-    <MudNavLink Href="/cashFlowForm" Match="NavLinkMatch.Prefix">Cash Flow Form</MudNavLink>
+<MudNavMenu Style="display:flex; gap:16px; flex-direction:column; margin-top:1rem;">
+    @if (appState.IsUserRegistered && !appState.IsUserLoggedIn)
+    {
+        <MudNavLink Href="/login" Match="NavLinkMatch.Prefix">Login</MudNavLink>
+    }
+
+    @if (!appState.IsUserRegistered)
+    {
+        <MudNavLink Href="/" Match="NavLinkMatch.Prefix">Register</MudNavLink>
+    }
+
+    @if (appState.IsUserLoggedIn)
+    {
+        <MudNavLink Href="/dashboard" Match="NavLinkMatch.Prefix">Dashboard</MudNavLink>
+        <MudNavLink Href="/cashFlowForm" Match="NavLinkMatch.Prefix">Cash Flow Form</MudNavLink>
+        <MudNavLink Href="/debtFlowForm" Match="NavLinkMatch.Prefix">Debt Flow Form</MudNavLink>
+        <MudNavLink Href="/transaction" Match="NavLinkMatch.Prefix">Transaction</MudNavLink>
+        <MudNavLink Href="/debt" Match="NavLinkMatch.Prefix">Debt</MudNavLink>
+
+        <!-- Logout Button -->
+        <MudNavLink @onclick="Logout" Style="cursor: pointer; color: red;">Logout</MudNavLink>
+    }
 </MudNavMenu>
 
+@code {
+    [Inject] private AppState appState { get; set; }
+    [Inject] private NavigationManager navigationManager { get; set; }
+
+    protected override void OnInitialized()
+    {
+        appState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        appState.OnChange -= StateHasChanged;
+    }
+
+    private void Logout()
+    {
+        // Mark the user as logged out in AppState
+        appState.IsUserLoggedIn = false;
+
+        // Redirect the user to the login page
+        navigationManager.NavigateTo("/login");
+    }
+}

@@ -1,10 +1,12 @@
 ﻿@inherits LayoutComponentBase
 @using CourseworkExpenseApp.Models
 @using CourseworkExpenseApp.Services
+@using CourseworkExpenseApp.Services
 @inject IDebtFlowService DebtFlowService
 @inject NavigationManager navigationManager
 @inject ICashFlowService CashFlowService
-
+@inject AppState appState
+@inject IUserService UserService
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -13,27 +15,26 @@
 
 <style>
     .app-bar-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
     }
 
     .total-balance {
-        background-color: #ffffff; /* White background */
-        color: #007bff; /* Blue text to complement the bar */
-        padding: 5px 10px; /* Add padding for better spacing */
-        border-radius: 5px; /* Rounded corners */
-        font-weight: bold; /* Make the text bold */
-        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
-        transition: transform 0.2s, box-shadow 0.2s; /* Add animation for hover effect */
+    background-color: #ffffff; /* White background */
+    color: #111111; /* Blue text to complement the bar */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: bold; /* Make the text bold */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
+    transition: transform 0.2s, box-shadow 0.2s; /* Add animation for hover effect */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
     }
-
-        .total-balance:hover {
-            transform: scale(1.05); /* Slightly enlarge on hover */
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
-        }
-
 
 </style>
 
@@ -44,13 +45,13 @@
             <div>
                 Expense Tracker Application
             </div>
-            <div class="total-balance">
-                Total Balance: @totalBalance
-            </div>
+            @if (appState.IsUserLoggedIn) 
+            {
+                <div class="total-balance">
+                    Total Balance: @currency @totalBalance
+                </div>
+            }
         </div>
-
-
-
     </MudAppBar>
 
     <MudDrawer @bind-Open="@_drawerOpen">
@@ -65,57 +66,61 @@
     bool _drawerOpen = true;
     void DrawerToggle()
     {
-
         _drawerOpen = !_drawerOpen;
     }
 
+    private string errorMessage;
+    private decimal totalInflows;
+    private decimal totalOutflows;
+    private decimal totalClearedDebts;
+    private decimal totalBalance;
+    private string currency;
 
-    @code {
-        private string errorMessage;
-        private decimal totalInflows;
-        private decimal totalOutflows;
-        private decimal totalClearedDebts;
-        private decimal totalBalance;
-
-
-        private async Task CalculateTotalBalanceAsync()
+    private async Task CalculateTotalBalanceAsync()
+    {
+        try
         {
-            try
-            {
-                var cashFlows = await CashFlowService.LoadCashFlowAsync();
-                var debts = await DebtFlowService.LoadDebtFlowAsync();
+            var cashFlows = await CashFlowService.LoadCashFlowAsync();
+            var debts = await DebtFlowService.LoadDebtFlowAsync();
 
-                totalInflows = cashFlows
-                    .Where(c => c.FlowType == "Inflow")
-                    .Sum(c => c.Amount);
+            totalInflows = cashFlows
+                .Where(c => c.FlowType == "Inflow")
+                .Sum(c => c.Amount);
 
-                totalOutflows = cashFlows
-                    .Where(c => c.FlowType == "Outflow")
-                    .Sum(c => c.Amount);
+            totalOutflows = cashFlows
+                .Where(c => c.FlowType == "Outflow")
+                .Sum(c => c.Amount);
 
-                totalClearedDebts = debts
-                    .Where(d => d.IsCleared)
-                    .Sum(d => d.Amount);
+            totalClearedDebts = debts
+                .Where(d => d.IsCleared)
+                .Sum(d => d.Amount);
 
-                totalBalance = totalInflows - totalOutflows - totalClearedDebts;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = $"Error calculating total balance: {ex.Message}";
-            }
+            totalBalance = totalInflows - totalOutflows - totalClearedDebts;
         }
-
-        protected override async Task OnInitializedAsync()
+        catch (Exception ex)
         {
-            try
-            {
-                await CalculateTotalBalanceAsync();
-            }
-            catch (Exception ex)
-            {
-                errorMessage = $"Error initializing data: {ex.Message}";
-            }
+            errorMessage = $"Error calculating total balance: {ex.Message}";
         }
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+
+        var users = await UserService.LoadUsersAsync();
+
+        // Assuming there's only one user, retrieve their username
+        if (users.Any())
+        {
+            currency = users.First().CurrencyType;
+        }
+
+        try
+        {
+            await CalculateTotalBalanceAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error initializing data: {ex.Message}";
+        }
+    }
 }

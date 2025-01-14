@@ -1,8 +1,9 @@
-﻿@page "/register"
+﻿@page "/"
 @using CourseworkExpenseApp.Models
 @using CourseworkExpenseApp.Services
 @inject IUserService userService
 @inject NavigationManager navigationManager
+@inject AppState appState
 
 @* Register Form *@
 <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -28,11 +29,22 @@
                 <label for="currency" class="form-label fw-bold">Currency Type</label>
                 <select id="currency" class="form-select" @bind="newUser.CurrencyType">
                     <option selected disabled>Select Currency Type</option>
+                    <option value="NPR">NPR</option>
                     <option value="USD">USD</option>
+                    <option value="INR">INR</option>
                     <option value="EUR">EUR</option>
                     <option value="GBP">GBP</option>
-                    <option value="INR">INR</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CAD">CAD</option>
+                    <option value="CHF">CHF</option>
+                    <option value="CNY">CNY</option>
+                    <option value="JPY">JPY</option>
+                    <option value="NZD">NZD</option>
+                    <option value="SGD">SGD</option>
+                    <option value="HKD">HKD</option>
+                    <option value="SEK">SEK</option>
                 </select>
+
             </div>
 
             <!-- Submit Button -->
@@ -73,6 +85,9 @@
 
             newUser = new User();
             errorMessage = null;
+
+            appState.IsUserRegistered = true;
+
             navigationManager.NavigateTo("/login");
         }
         catch (Exception ex)

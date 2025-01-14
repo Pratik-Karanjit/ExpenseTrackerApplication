@@ -10,61 +10,64 @@
             <h4>Debt Form</h4>
         </div>
         <div class="card-body">
-            <form>
+            <EditForm Model="@newDebtFlow" OnValidSubmit="@AddDebtFlow">
+                <DataAnnotationsValidator />
 
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="debtFlowSource" class="form-label">Debt Flow Source</label>
-                        <input type="text" id="debtFlowSource" class="form-control" placeholder="Enter your Debt Flow Source" @bind="newDebtFlow.DebtFormSource" />
+                        <InputText id="debtFlowSource" class="form-control" placeholder="Enter your Debt Flow Source" @bind-Value="newDebtFlow.DebtFormSource" />
+                        <ValidationMessage For="@(() => newDebtFlow.DebtFormSource)" />
                     </div>
                     <div class="col-md-6">
                         <label for="amount" class="form-label">Amount</label>
-                        <input type="number" id="amount" class="form-control" placeholder="Enter your Amount" @bind="newDebtFlow.Amount" />
+                        <InputNumber id="amount" class="form-control" placeholder="Enter your Amount" @bind-Value="newDebtFlow.Amount" />
+                        <ValidationMessage For="@(() => newDebtFlow.Amount)" />
                     </div>
                 </div>
 
-                <!-- Due Date and Transaction Date -->
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="dueDate" class="form-label">Due Date</label>
-                        <input type="date" id="dueDate" class="form-control" @bind="newDebtFlow.DueDate" />
+                        <label for="transactionDate" class="form-label">Transaction Date</label>
+                        <InputDate id="transactionDate" class="form-control" @bind-Value="newDebtFlow.TransactionDate" />
+                        <ValidationMessage For="@(() => newDebtFlow.TransactionDate)" />
                     </div>
                     <div class="col-md-6">
-                        <label for="transactionDate" class="form-label">Transaction Date</label>
-                        <input type="date" id="transactionDate" class="form-control" @bind="newDebtFlow.TransactionDate" />
+                        <label for="dueDate" class="form-label">Due Date</label>
+                        <InputDate id="dueDate" class="form-control" @bind-Value="newDebtFlow.DueDate" />
+                        <ValidationMessage For="@(() => newDebtFlow.DueDate)" />
                     </div>
                 </div>
 
-                <!-- Tag and Custom Tag -->
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="tag" class="form-label">Tag</label>
-                        <select id="tag" @bind="newDebtFlow.Tag" class="form-select">
-                            <option selected>Select a Tag</option>
+                        <InputSelect id="tag" class="form-select" @bind-Value="newDebtFlow.Tag">
+                            <option value="">Select a Tag</option>
                             <option value="Loan">Loan</option>
                             <option value="Bills">Bills</option>
                             <option value="House">House</option>
-                        </select>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => newDebtFlow.Tag)" />
                     </div>
                     <div class="col-md-6">
                         <label for="customTag" class="form-label">Custom Tag (Optional)</label>
-                        <input type="text" id="customTag" class="form-control" placeholder="Custom Tag" @bind="newDebtFlow.CustomTag" />
+                        <InputText id="customTag" class="form-control" placeholder="Custom Tag" @bind-Value="newDebtFlow.CustomTag" />
                     </div>
                 </div>
 
-                <!-- Notes -->
                 <div class="mb-3">
                     <label for="notes" class="form-label">Notes (Optional)</label>
-                    <textarea id="notes" class="form-control" rows="3" placeholder="Enter note" @bind="newDebtFlow.Notes"></textarea>
+                    <InputTextArea id="notes" class="form-control" rows="3" placeholder="Enter note" @bind-Value="newDebtFlow.Notes"></InputTextArea>
                 </div>
 
-                <!-- Submit Button -->
                 <div class="d-flex justify-content-end align-items-end">
-                    <button type="submit" @onclick="AddDebtFlow" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
+                    <button type="submit" class="btn btn-primary fw-semibold px-7 py-3" style="background-color: #594AE2; border: none;">
                         Submit
                     </button>
                 </div>
-            </form>
+            </EditForm>
+
         </div>
     </div>
 </div>

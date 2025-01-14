@@ -4,76 +4,80 @@
 @inject ICashFlowService CashFlowService
 @inject IDebtFlowService DebtFlowService
 @inject NavigationManager navigationManager
+@inject IUserService UserService
 
-<h1 class="fs-2 pl-7 pt-5">DASHBOARD</h1>
+<div style="display:flex; width:100%; justify-content:space-between; align-items: center;">
+    <h1 class="fs-2 pl-7 pt-5">DASHBOARD</h1>
+    <h2 style="margin-top:1rem; margin-right: 2rem;">Hello, @username!</h2>
+</div>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
         <!-- Total Inflows -->
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2"
-                      Class="pa-4 d-flex align-items-center"
-                      Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
+            Class="pa-4 d-flex align-items-center"
+            Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
                 <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
-                    <h1 class="mb-1 text-white">Rs.@totalInflows</h1>
+                    <h1 class="mb-1 text-white">@currency @totalInflows</h1>
                     <p class="fs-5 text-white">Total Cash Inflows</p>
                 </div>
                 <MudImage Src="/Images/currency_icon.png"
-                          Alt="currency"
-                          Class="ml-auto"
-                          Width="120"
-                          Height="120"
-                          ObjectFit="ObjectFit.Contain" />
+                Alt="currency"
+                Class="ml-auto"
+                Width="120"
+                Height="120"
+                ObjectFit="ObjectFit.Contain" />
             </MudPaper>
         </MudItem>
 
         <!-- Total Outflows -->
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2"
-                      Class="pa-4 d-flex align-items-center"
-                      Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
+            Class="pa-4 d-flex align-items-center"
+            Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
                 <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
-                    <h1 class="mb-1 text-white">Rs.@totalOutflows</h1>
+                    <h1 class="mb-1 text-white">@currency @totalOutflows</h1>
                     <p class="fs-5 text-white">Total Cash Outflows</p>
                 </div>
                 <MudImage Src="/Images/currency_icon.png"
-                          Alt="currency"
-                          Class="ml-auto"
-                          Width="120"
-                          Height="120"
-                          ObjectFit="ObjectFit.Contain" />
+                Alt="currency"
+                Class="ml-auto"
+                Width="120"
+                Height="120"
+                ObjectFit="ObjectFit.Contain" />
             </MudPaper>
         </MudItem>
 
         <!-- Total Debts -->
         <MudItem xs="12" sm="6" md="4">
             <MudPaper Elevation="2"
-                      Class="pa-4 d-flex align-items-center"
-                      Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
+            Class="pa-4 d-flex align-items-center"
+            Style="height: 200px; background: linear-gradient(90deg, #3D9970 0%, #178152 100%); border-radius: 10px;">
                 <div class="d-flex flex-column align-items-start justify-content-center flex-grow-1 pl-5 gap-4">
-                    <h1 class="mb-1 text-white">Rs.@totalDebts</h1>
+                    <h1 class="mb-1 text-white">@currency @totalDebts</h1>
                     <p class="fs-5 text-white">Total Cash Debts</p>
                 </div>
                 <MudImage Src="/Images/currency_icon.png"
-                          Alt="currency"
-                          Class="ml-auto"
-                          Width="120"
-                          Height="120"
-                          ObjectFit="ObjectFit.Contain" />
+                Alt="currency"
+                Class="ml-auto"
+                Width="120"
+                Height="120"
+                ObjectFit="ObjectFit.Contain" />
             </MudPaper>
         </MudItem>
 
         <!-- Top 5 Highest Transactions -->
-        <MudItem xs="12" sm="6" md="3">
+        <MudItem xs="12" sm="4" md="4">
             <MudPaper Elevation="2"
-                      Class="pa-4"
-                      Style="height: 320px;">
+            Class="pa-4"
+            Style="height: 320px;">
                 <h2 class="fs-3 pb-4">Top 5 Highest Transactions</h2>
                 <MudTable Items="@topTransactions" Dense="true">
                     <HeaderContent>
-                        <MudTh>Type</MudTh>
-                        <MudTh>Tag</MudTh>
-                        <MudTh>Amount (Rs.)</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white;">Type</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white;">Tag</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white;">Amount</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.FlowType</MudTd>
@@ -85,16 +89,16 @@
         </MudItem>
 
         <!-- Top 5 Lowest Transactions -->
-        <MudItem xs="12" sm="6" md="3">
+        <MudItem xs="12" sm="4" md="4">
             <MudPaper Elevation="2"
-                      Class="pa-4"
-                      Style="height: 320px;">
+            Class="pa-4"
+            Style="height: 320px;">
                 <h2 class="fs-3 pb-4">Top 5 Lowest Transactions</h2>
                 <MudTable Items="@lowestTransactions" Dense="true">
                     <HeaderContent>
-                        <MudTh>Type</MudTh>
-                        <MudTh>Tag</MudTh>
-                        <MudTh>Amount (Rs.)</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white;">Type</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white;">Tag</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white;">Amount</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd>@context.FlowType</MudTd>
@@ -105,27 +109,27 @@
             </MudPaper>
         </MudItem>
 
-        <MudItem xs="12" sm="6" md="6">
+        <MudItem xs="12" sm="4" md="4">
             <MudPaper Elevation="2" Class="pa-4 d-flex align-center justify-center" Style="height: 320px; width: 100%; z-index: 1000; position: relative;">
                 <MudChart ChartType="ChartType.Pie"
-                          Width="100%"
-                          Height="200px"
-                          InputData="@chartData.ToArray()"
-                          InputLabels="@formattedLabels.ToArray()"
-                          ChartOptions="@options" />
+                Width="100%"
+                Height="200px"
+                InputData="@chartData.ToArray()"
+                InputLabels="@formattedLabels.ToArray()"
+                ChartOptions="@options" />
             </MudPaper>
         </MudItem>
 
         <!-- Remaining Debts -->
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="2"
-                      style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
+            style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
                  color: white;
                  border-radius: 10px;
                  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                  height: 150px;
                  padding: 1rem;">
-                <h1 style="color: white;" class="mb-1">Rs.@remainingDebt</h1>
+                <h1 style="color: white;" class="mb-1">@currency @remainingDebt</h1>
                 <p style="color: white;" class="fs-5">Remaining Debts</p>
             </MudPaper>
         </MudItem>
@@ -133,13 +137,13 @@
         <!-- Cleared Debts -->
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="2"
-                      style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
+            style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
                  color: white;
                  border-radius: 10px;
                  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                  height: 150px;
                  padding: 1rem;">
-                <h1 style="color: white;" class="mb-1">Rs.@clearedDebt</h1>
+                <h1 style="color: white;" class="mb-1">@currency @clearedDebt</h1>
                 <p style="color: white;" class="fs-5">Cleared Debts</p>
             </MudPaper>
         </MudItem>
@@ -147,13 +151,13 @@
         <!-- Total Transactions -->
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="2"
-                      style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
+            style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
                  color: white;
                  border-radius: 10px;
                  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                  height: 150px;
                  padding: 1rem;">
-                <h1 style="color: white;" class="mb-1">@totalTransactions</h1>
+                <h1 style="color: white;" class="mb-1">@currency @totalTransactions</h1>
                 <p style="color: white;" class="fs-5">Total Transactions</p>
             </MudPaper>
         </MudItem>
@@ -161,7 +165,7 @@
         <!-- Total Number of Transactions -->
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="2"
-                      style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
+            style="background: linear-gradient(135deg, #2C7DA0 0%, #1B4965 100%);
                  color: white;
                  border-radius: 10px;
                  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -175,24 +179,24 @@
         <!-- Pending Debts -->
         <MudItem xs="12" sm="12" md="12">
             <MudPaper Elevation="2"
-                      style="background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+            style="background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
                      color: white;
                      border-radius: 10px;
                      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                      height: auto;
-                     min-height: 400px;
+                     min-height: 300px;
                      padding: 1rem;
                      margin-bottom: 3rem">
                 <div class="d-flex justify-space-between align-center mb-4">
-                    <p style="color: black;" class="fs-5 mb-0">Pending Debts</p>
+                    <p style="color: black; font-size: 1.5rem;" class="mb-0 fw-bold">Pending Debts</p>
                     <MudSelect T="string"
-                               Value="selectedMonth"
-                               ValueChanged="@((string value) => FilterByMonth(value))"
-                               Class="ml-auto"
-                               Style="width: 200px !important; max-width: 200px !important;"
-                               Variant="Variant.Outlined"
-                               Dense="true"
-                               AnchorOrigin="Origin.BottomCenter">
+                    Value="selectedMonth"
+                    ValueChanged="@((string value) => FilterByMonth(value))"
+                    Class="ml-auto"
+                    Style="width: 200px !important; max-width: 200px !important;"
+                    Variant="Variant.Outlined"
+                    Dense="true"
+                    AnchorOrigin="Origin.BottomCenter">
                         @foreach (var month in monthOptions)
                         {
                             <MudSelectItem Value="@month">@month</MudSelectItem>
@@ -200,15 +204,15 @@
                     </MudSelect>
                 </div>
                 <MudTable Items="@pendingDebts"
-                          Dense="true"
-                          Hover="true"
-                          Bordered="true"
-                          Striped="true">
+                Dense="true"
+                Hover="true"
+                Bordered="true"
+                Striped="true">
                     <HeaderContent>
                         <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Debt Sources</MudTh>
                         <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Transaction Date</MudTh>
                         <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Due Date</MudTh>
-                        <MudTh Style="background-color: #594AE2; color: white; text-align: right; font-size: 1.1rem; padding: 15px;">Amount (Rs.)</MudTh>
+                        <MudTh Style="background-color: #594AE2; color: white; text-align: right; font-size: 1.1rem; padding: 15px;">Amount</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Debt Source" Style="color: black; background-color: white; font-size: 1rem;">
@@ -248,6 +252,8 @@
     private decimal clearedDebt;
     private int totalTransactions;
     private int totalNumberOfTransactions;
+    private string username;
+    private string currency;
 
     private int selectedIndex = -1;
     private List<double> chartData = new();
@@ -272,6 +278,16 @@
 
     protected override async Task OnInitializedAsync()
     {
+
+        var users = await UserService.LoadUsersAsync();
+
+        // Assuming there's only one user, retrieve their username
+        if (users.Any())
+        {
+            username = users.First().UserName;
+            currency = users.First().CurrencyType;
+        }
+
         var cashFlows = await CashFlowService.LoadCashFlowAsync();
         var debts = await DebtFlowService.LoadDebtFlowAsync();
 

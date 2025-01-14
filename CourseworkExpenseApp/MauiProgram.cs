@@ -23,6 +23,9 @@ namespace CourseworkExpenseApp
             builder.Services.AddSingleton<IDebtFlowService, DebtFlowService>();
             builder.Services.AddSingleton<AuthenticationStateService>();
 
+            builder.Services.AddSingleton<AppState>();
+
+
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
