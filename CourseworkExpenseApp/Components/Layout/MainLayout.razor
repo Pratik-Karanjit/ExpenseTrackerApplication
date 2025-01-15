@@ -73,6 +73,7 @@
     private decimal totalInflows;
     private decimal totalOutflows;
     private decimal totalClearedDebts;
+    private decimal remainingDebt;
     private decimal totalBalance;
     private string currency;
 
@@ -95,7 +96,11 @@
                 .Where(d => d.IsCleared)
                 .Sum(d => d.Amount);
 
-            totalBalance = totalInflows - totalOutflows - totalClearedDebts;
+            remainingDebt = debts.Where(d => !d.IsCleared).Sum(d => d.Amount);
+
+            totalBalance = totalInflows + remainingDebt - totalOutflows;
+
+            // totalBalance = totalInflows - totalOutflows - totalClearedDebts;
         }
         catch (Exception ex)
         {

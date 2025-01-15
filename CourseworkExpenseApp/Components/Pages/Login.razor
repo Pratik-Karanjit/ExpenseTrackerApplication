@@ -64,6 +64,7 @@
                 authStateService.SetAuthenticatedUser(user);
 
                 appState.IsUserLoggedIn = true;
+                appState.IsUserRegistered = true;
 
                 // Redirect to the dashboard or todo page
                 navigationManager.NavigateTo("/dashboard");

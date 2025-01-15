@@ -84,7 +84,9 @@
                                 <td>@(!string.IsNullOrEmpty(cashFlow.CustomTag) ? cashFlow.CustomTag : "---")</td>
                                 <td>@(!string.IsNullOrEmpty(cashFlow.Notes) ? cashFlow.Notes : "---")</td>
                                 <td>@cashFlow.Date?.ToString("MMMM dd, yyyy")</td>
-                                <td>@cashFlow.Amount</td>
+                                <td style="background-color: @((sortBy == "Amount") ? "#CFCDE9" : "#ffffff"); color:@((sortBy == "Amount") ? "#111111" : "#111111");">
+                                    @cashFlow.Amount
+                                </td>
                             </tr>
                         }
                     }

@@ -4,6 +4,7 @@
 @inject ICashFlowService CashFlowService
 @inject NavigationManager navigationManager
 @inject IDebtFlowService DebtFlowService
+@inject IUserService UserService
 
 <div class="container mt-5">
     <div class="card">
@@ -52,7 +53,7 @@
                     </div>
                 </div>
 
-            
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="tag" class="form-label">Tag</label>
@@ -97,10 +98,24 @@
 @code {
     private CashFlow newCashFlow = new CashFlow();
     private string errorMessage;
-        private decimal totalInflows;
-        private decimal totalOutflows;
-        private decimal totalClearedDebts;
+    private decimal totalInflows;
+    private decimal totalOutflows;
+    private string currency;
+    private decimal totalClearedDebts;
     private decimal currentBalance;
+    private decimal remainingDebt;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var users = await UserService.LoadUsersAsync();
+
+        if (users.Any())
+        {
+            currency = users.First().CurrencyType;
+        }
+    }
 
     private async Task AddCashFlow()
     {
@@ -122,12 +137,16 @@
                 .Where(d => d.IsCleared)
                 .Sum(d => d.Amount);
 
-            currentBalance = totalInflows - totalOutflows - totalClearedDebts;
+            remainingDebt = debts.Where(d => !d.IsCleared).Sum(d => d.Amount);
+
+            currentBalance = totalInflows + remainingDebt - totalOutflows;
+
+            // currentBalance = totalInflows - totalOutflows - totalClearedDebts;
 
             // Check if there is sufficient balance for outflows
             if (newCashFlow.FlowType == "Outflow" && newCashFlow.Amount > currentBalance)
             {
-                errorMessage = $"Insufficient balance for Outflow! Current balance: {currentBalance:C}.";
+                errorMessage = $"Insufficient balance for Outflow! Current balance: {currency} {currentBalance}.";
                 return;
             }
 

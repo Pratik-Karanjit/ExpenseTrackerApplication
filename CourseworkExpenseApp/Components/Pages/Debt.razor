@@ -4,6 +4,7 @@
 @inject IDebtFlowService DebtFlowService
 @inject NavigationManager navigationManager
 @inject ICashFlowService CashFlowService
+@inject IUserService UserService
 
 
 <style>
@@ -73,7 +74,7 @@
                         <th style="background-color: #594AE2; color:white;">Notes</th>
                         <th style="background-color: #594AE2; color:white;">Transaction Date</th>
                         <th style="background-color: #594AE2; color:white;">Due Date</th>
-                        <th style="background-color: @((sortBy == "Amount") ? "#ADD8E6" : "#594AE2"); color:white;">Amount</th>
+                        <th style="background-color: @((sortBy == "Amount") ? "#594AE2" : "#594AE2"); color:white;">Amount</th>
                         <th style="background-color: #594AE2; color:white;">Status</th>
                         <th style="background-color: #594AE2; color:white;">Edit</th>
                     </tr>
@@ -90,7 +91,7 @@
                                 <td>@(!string.IsNullOrEmpty(cashFlow.Notes) ? cashFlow.Notes : "---")</td>
                                 <td>@cashFlow.TransactionDate?.ToString("MMMM dd, yyyy")</td>
                                 <td>@cashFlow.DueDate?.ToString("MMMM dd, yyyy")</td>
-                                <td style="background-color: @((sortBy == "Amount") ? "#ADD8E6" : "#ffffff"); color:@((sortBy == "Amount") ? "#ffffff" : "#111111");">
+                                <td style="background-color: @((sortBy == "Amount") ? "#CFCDE9" : "#ffffff"); color:@((sortBy == "Amount") ? "#111111" : "#111111");">
                                     @cashFlow.Amount
                                 </td>
                                 <td>
@@ -129,7 +130,9 @@
     private decimal totalInflows;
     private decimal totalOutflows;
     private decimal totalClearedDebts;
+    private decimal remainingDebt;
     private decimal totalBalance;
+    private string currency;
 
     private void ClearErrorMessage()
     {
@@ -164,7 +167,11 @@
                 .Where(d => d.IsCleared)
                 .Sum(d => d.Amount);
 
-            totalBalance = totalInflows - totalOutflows - totalClearedDebts;
+            remainingDebt = debts.Where(d => !d.IsCleared).Sum(d => d.Amount);
+
+            totalBalance = totalInflows + remainingDebt - totalOutflows;
+
+            // totalBalance = totalInflows - totalOutflows - totalClearedDebts;
         }
         catch (Exception ex)
         {
@@ -174,6 +181,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var users = await UserService.LoadUsersAsync();
+
+        if (users.Any())
+        {
+            currency = users.First().CurrencyType;
+        }
         try
         {
             debtFlows = await DebtFlowService.LoadDebtFlowAsync();
@@ -275,9 +288,9 @@
     {
         try
         {
-            if (debtAmount > totalBalance)
+            if (debtAmount > totalInflows)
             {
-                errorMessage = $"Cannot clear debt: Insufficient balance. Current balance: {totalBalance:C}, Debt amount: {debtAmount:C}";
+                errorMessage = $"Cannot clear debt: Insufficient inflows. Current inflow: {currency} {totalInflows}, Debt amount: {currency} {debtAmount}";
                 return;
             }
 

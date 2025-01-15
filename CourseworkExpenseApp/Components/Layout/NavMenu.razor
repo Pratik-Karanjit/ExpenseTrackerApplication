@@ -4,14 +4,14 @@
 </div>
 
 <MudNavMenu Style="display:flex; gap:16px; flex-direction:column; margin-top:1rem;">
-    @if (appState.IsUserRegistered && !appState.IsUserLoggedIn)
-    {
-        <MudNavLink Href="/login" Match="NavLinkMatch.Prefix">Login</MudNavLink>
-    }
 
     @if (!appState.IsUserRegistered)
     {
         <MudNavLink Href="/" Match="NavLinkMatch.Prefix">Register</MudNavLink>
+    }
+    @if (!appState.IsUserLoggedIn)
+    {
+        <MudNavLink Href="/login" Match="NavLinkMatch.Prefix">Login</MudNavLink>
     }
 
     @if (appState.IsUserLoggedIn)
