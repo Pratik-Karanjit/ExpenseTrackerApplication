@@ -187,48 +187,67 @@
                      min-height: 300px;
                      padding: 1rem;
                      margin-bottom: 3rem">
-                <div class="d-flex justify-space-between align-center mb-4">
-                    <p style="color: black; font-size: 1.5rem;" class="mb-0 fw-bold">Pending Debts</p>
-                    <MudSelect T="string"
-                    Value="selectedMonth"
-                    ValueChanged="@((string value) => FilterByMonth(value))"
-                    Class="ml-auto"
-                    Style="width: 200px !important; max-width: 200px !important;"
-                    Variant="Variant.Outlined"
-                    Dense="true"
-                    AnchorOrigin="Origin.BottomCenter">
-                        @foreach (var month in monthOptions)
-                        {
-                            <MudSelectItem Value="@month">@month</MudSelectItem>
-                        }
-                    </MudSelect>
-                </div>
-                <MudTable Items="@pendingDebts"
-                Dense="true"
-                Hover="true"
-                Bordered="true"
-                Striped="true">
-                    <HeaderContent>
-                        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Debt Sources</MudTh>
-                        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Transaction Date</MudTh>
-                        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Due Date</MudTh>
-                        <MudTh Style="background-color: #594AE2; color: white; text-align: right; font-size: 1.1rem; padding: 15px;">Amount</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Debt Source" Style="color: black; background-color: white; font-size: 1rem;">
-                            @context.DebtFormSource
-                        </MudTd>
-                        <MudTd DataLabel="Transaction Date" Style="color: black; background-color: white; font-size: 1rem;">
-                            @(context.TransactionDate?.ToString("dd/MM/yyyy"))
-                        </MudTd>
-                        <MudTd DataLabel="Due Date" Style="color: black; background-color: white; font-size: 1rem;">
-                            @(context.DueDate?.ToString("dd/MM/yyyy"))
-                        </MudTd>
-                        <MudTd DataLabel="Amount" Style="color: black; background-color: white; text-align: right; font-size: 1rem;">
-                            @context.Amount.ToString("N2")
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 style="color: #4A4947;">Pending Debts</h2>
+ <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+
+    <div style="display: flex; align-items: center; gap: 40px;">
+        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+            <label for="startDate" style="color:#4A4947; font-size: 0.9rem; margin-bottom: 4px;">Start Date:</label>
+            <input type="date" id="startDate" @bind="filterStartDate" 
+                style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem; color: #4A4947; outline: none; 
+                       transition: border-color 0.2s; width: 160px;" 
+                onfocus="this.style.borderColor='#594AE2';" 
+                onblur="this.style.borderColor='#ddd';" />
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+            <label for="endDate" style="color:#4A4947; font-size: 0.9rem; margin-bottom: 4px;">End Date:</label>
+            <input type="date" id="endDate" @bind="filterEndDate" 
+                style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem; color: #4A4947; outline: none; 
+                       transition: border-color 0.2s; width: 160px;" 
+                onfocus="this.style.borderColor='#594AE2';" 
+                onblur="this.style.borderColor='#ddd';" />
+        </div>
+        <button @onclick="FilterDebts" 
+            style="padding: 10px 15px; background-color: #594AE2; color: white; border: none; border-radius: 5px; cursor: pointer; 
+                   font-size: 0.9rem; transition: background-color 0.3s;"
+            onmouseover="this.style.backgroundColor='#473BC1';" 
+            onmouseout="this.style.backgroundColor='#594AE2';">
+            Filter
+        </button>
+        <button @onclick="ClearFilter" 
+            style="padding: 10px 15px; background-color: white; color: #594AE2; border: 1px solid #594AE2; border-radius: 5px; cursor: pointer; 
+                   font-size: 0.9rem; transition: all 0.3s;"
+            onmouseover="this.style.backgroundColor='#594AE2'; this.style.color='white';" 
+            onmouseout="this.style.backgroundColor='white'; this.style.color='#594AE2';">
+            Clear Filter
+        </button>
+    </div>
+</div>
+</div>
+
+<MudTable Items="@filteredDebts" Dense="true" Hover="true" Bordered="true" Striped="true">
+    <HeaderContent>
+        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Debt Sources</MudTh>
+        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Transaction Date</MudTh>
+        <MudTh Style="background-color: #594AE2; color: white; font-size: 1.1rem; padding: 15px;">Due Date</MudTh>
+        <MudTh Style="background-color: #594AE2; color: white; text-align: right; font-size: 1.1rem; padding: 15px;">Amount</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Debt Source" Style="color: black; background-color: white; font-size: 1rem;">
+            @context.DebtFormSource
+        </MudTd>
+        <MudTd DataLabel="Transaction Date" Style="color: black; background-color: white; font-size: 1rem;">
+            @(context.TransactionDate?.ToString("dd/MM/yyyy"))
+        </MudTd>
+        <MudTd DataLabel="Due Date" Style="color: black; background-color: white; font-size: 1rem;">
+            @(context.DueDate?.ToString("dd/MM/yyyy"))
+        </MudTd>
+        <MudTd DataLabel="Amount" Style="color: black; background-color: white; text-align: right; font-size: 1rem;">
+            @context.Amount.ToString("N2")
+        </MudTd>
+    </RowTemplate>
+</MudTable>
             </MudPaper>
         </MudItem>
 
@@ -244,6 +263,13 @@
     private List<DebtFlow> pendingDebts;
     private string selectedMonth = "All Months";
     private List<string> monthOptions = new();
+
+    private DateTime? filterStartDate;
+    private DateTime? filterEndDate;
+
+    private List<DebtFlow> debtFlows = new(); 
+    private List<DebtFlow> filteredDebts = new();
+
 
     private decimal totalInflows;
     private decimal totalOutflows;
@@ -263,9 +289,9 @@
     private ChartOptions options = new()
         {
             ChartPalette = new[] {
-            "#3D9970",  // Darker green for inflows
-            "#2979FF",  // Darker red for outflows
-            "#FFC400"   // Dark amber for debts
+            "#3D9970", 
+            "#2979FF",  
+            "#FFC400" 
     },
         };
 
@@ -280,6 +306,10 @@
     {
 
         var users = await UserService.LoadUsersAsync();
+         var allDebts = await DebtFlowService.LoadDebtFlowAsync();
+          debtFlows = allDebts.Where(d => !d.IsCleared).ToList();
+
+          filteredDebts = new List<DebtFlow>(debtFlows);
 
         // Assuming there's only one user, retrieve their username
         if (users.Any())
@@ -386,5 +416,38 @@
             .Where(d => d.TransactionDate?.Month == selectedDate.Month
                      && d.TransactionDate?.Year == selectedDate.Year)
             .ToList();
+    }
+
+
+     private void FilterDebts()
+    {
+        // Start with all pending debts
+        filteredDebts = debtFlows.ToList();
+
+        // Apply date range filters if provided
+        if (filterStartDate.HasValue)
+        {
+            filteredDebts = filteredDebts
+                .Where(d => d.TransactionDate >= filterStartDate.Value)
+                .ToList();
+        }
+
+        if (filterEndDate.HasValue)
+        {
+            filteredDebts = filteredDebts
+                .Where(d => d.TransactionDate <= filterEndDate.Value)
+                .ToList();
+        }
+    }
+
+
+     private void ClearFilter()
+    {
+        // Reset date filters
+        filterStartDate = null;
+        filterEndDate = null;
+
+        // Reset to show all pending debts
+        filteredDebts = new List<DebtFlow>(debtFlows);
     }
 }
